@@ -1,0 +1,212 @@
+<div class="col-md-12 float-left  mt-5 pt-4">
+  <app-loader [show]="showloader"></app-loader>
+
+  <div *ngIf="!showChart" id="chartView">
+    <app-filter-chip-list></app-filter-chip-list>
+    <div class="text-right float-right"> <i class="fa fa-caret-up text-success mr-1 fa-2x"></i>/
+      <i class="fa-2x fa fa-caret-down text-danger mr-2"></i><span class="font-sm">Significant @ 95% level</span>
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <h3 class="mt-2 mb-2 float-left col-8 pt-1 pos-rel" style="font-size: 24px;color:#29a84a">Reason for recent purchase
+      (%) - {{Category}} <i class="font-xs ml-2 text-dark">Base: Recent {{Category}} replacement / remodel</i>
+      <div class="titleOnHover" *ngIf="Category == 'Faucet'"><b>Reason for recent purchase</b> : RPF_FAU_RECENT_FAU2
+      </div>
+      <div class="titleOnHover" *ngIf="Category == 'Showerhead'"><b>Reason for recent purchase</b> : RPF_SHD_RECENT_SHD2
+      </div>
+      <div class="titleOnHover" *ngIf="Category == 'Toilet'"><b>Reason for recent purchase</b> : RPF_TOI_RECENT_TOI2
+      </div>
+    </h3>
+    <app-chart-container *ngIf="brandcode.length" [chart]="dataShow" [updateData]="onDataUpdate" style="display: none">
+    </app-chart-container>
+    <app-chart-container [chart]="dataShowTotalAvg" [updateData]="onDataUpdate" style="display: none">
+    </app-chart-container>
+    <div class="float-right  mt-1">
+      <!-- <span class="mr-4" hidden><i class="fa fa-caret-up text-success mr-2 fa-2x"></i>
+         <i class="fa-2x fa fa-caret-down text-danger mr-2"></i><span>Significant @ 95% level</span></span>
+        <i class="fa fa-download font-sm border rounded p-2 clickable mr-2" hidden title="Download Regression Analysis"></i>
+        <i class="fa fa-table font-sm border rounded p-2 clickable mr-2" hidden title="Switch to Table View"></i>
+        <i class="fa fa-line-chart font-sm border rounded p-2 clickable" hidden title="Switch to Trended View"></i> -->
+      <div class="float-right mr-1">
+        <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable" style="height:20px;"
+          (click)="downloadExcelFile();" />
+        <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable" style="height:20px;"
+          (click)="pptexport('ReasonRecentPurchase_PPT.zip')" />
+      </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="col-12">
+
+      <!-- <div *ngIf="data">
+        <table class="table table-bordered w-100 mb-0">
+            <tr class="brandList">
+                <td style="width:35%"></td>
+                <td><label>Overall Market Average</label></td>
+                <td class="text-center" *ngFor="let brand of brandList"><img src="{{brand}}" /></td>
+            </tr>
+        </table>
+    </div> -->
+      <div class="overflow" *ngIf="data">
+        <table class="w-100 table table-bordered">
+          <tr class="brandList">
+            <td style="width:35%"></td>
+            <td><label>Overall Market Average</label></td>
+            <td class="text-center" *ngFor="let brand of brandList"><img src="{{brand}}" /></td>
+          </tr>
+          <tr *ngFor="let recentDetails of dataShowData; let i = index">
+            <td class="text-right" style="width:35%">
+              {{recentDetails.question}}
+            </td>
+            <td class="text-center">
+              {{recentDetails.Avg | roundOff}}
+            </td>
+            <td class="pos-rel" *ngFor="let score of recentDetails.Score; let k = index">
+              <div class="text-center LowBase" [ngClass]="{'hide' :(score  | scoreAndBase :dataShowBases[k]) != 'Low base'}">Low Base</div>
+              <div class="col-3 float-left pos-rel" [ngClass]="{'hide' :(score  | scoreAndBase :dataShowBases[k]) == 'Low base'}">
+                <div class="bar-score text-center">{{score | scoreAndBase :dataShowBases[k]}}</div>
+              </div>
+              <div class="col-6 float-left p-0 barBox base"
+                [ngClass]="{'hide' :(score  | scoreAndBase :dataShowBases[k]) == 'Low base'}">
+                <div class="bar-width" [style.width.%]="score| roundOff"></div>
+                <div class="baseCount">Base: {{dataShowBases[k]}}</div>
+              </div>
+              <div *ngIf="recentDetails.isSignificance[k] && recentDetails.isSignificance[k] != undefined && (score | showSigTest :recentDetails.compareScore[k]) !== 0"
+                class="col-2 float-left sigbase"
+                [ngClass]="{'hide' :(score  | scoreAndBase :dataShowBases[k]) == 'Low base'}">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(score | showSigTest :recentDetails.compareScore[k]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(score | showSigTest :recentDetails.compareScore[k]) === 1"></i>
+                <div class="baseCount">Comparison Score: {{recentDetails.compareScore[k] | scoreAndBase}}
+                  <br><span>Comparison Base: {{recentDetails.compareBase[k]}}</span>
+                </div>
+              </div>
+
+            </td>
+          </tr>
+        </table>
+      </div>
+      <!-- <div *ngIf="!data && !showloader" class="alert alert-info font-sm text-center col-md-4 ml-auto mr-auto mt-4">No Data Available</div> -->
+      <!-- <div *ngIf="!data" class="alert alert-info font-sm text-center col-md-4 ml-auto mr-auto mt-4">Loading. . .</div> -->
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div *ngIf="showTrends" id="trendView">
+    <div class="text-right float-right">
+      <img src="../../../assets/images/ppt.png" title="Download PPT" (click)="downloadPptTrends()" class="clickable"
+        style="height:20px;" />
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <div class="row">
+      <div class="col-12">
+
+        <nav class="nav nav-pills border nav-justified">
+          <a class="nav-item nav-link active clickable border-right" [class.active]="periodSeclected == 'tab1'"
+            rel="tab1" (click)="changeTimePeriod('Quarterly','tab1')">
+            Quarterly
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab2'" rel="tab2"
+            (click)="changeTimePeriod('SemiAnnually','tab2')">
+            Semi Annually
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab3'" rel="tab3"
+            (click)="changeTimePeriod('Annually','tab3')">
+            Annually
+          </a>
+        </nav>
+
+      </div>
+    </div>
+    <div class="tab-content" id="myTabContent">
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green"  *ngIf="Category === 'Faucet'">To replace a leaky or malfunctioning faucet</div>
+            <div class="card-header green"  *ngIf="Category === 'Showerhead'">To replace a leaky or malfunctioning showerhead</div>
+            <div class="card-header green"  *ngIf="Category === 'Toilet'">To replace a leaky or malfunctioning toilet</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRecentPurchaseTrendsQues1" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green"  *ngIf="Category === 'Faucet'">To replace a faucet with a cracked or peeling finish</div>
+            <div class="card-header green"  *ngIf="Category === 'Showerhead'">To replace a showerhead with a cracked or peeling finish</div>
+            <div class="card-header green"  *ngIf="Category === 'Toilet'">To replace a cracked or chipped toilet</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRecentPurchaseTrendsQues2" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green"  *ngIf="Category === 'Faucet'">Didn't like the old faucet / wanted a new one</div>
+            <div class="card-header green"  *ngIf="Category === 'Showerhead'">Didn't like the old showerhead / wanted a new one</div>
+            <div class="card-header green"  *ngIf="Category === 'Toilet'">Didn't like the old toilet / wanted a new one</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRecentPurchaseTrendsQues3" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">As part of a redecorating project of less than $1000, where you were updating the look of the room by painting and changing out items like shower curtains, towels, faucets, accessories, etc.</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRecentPurchaseTrendsQues4" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">As part of a remodeling project of $1000 or more, which involved structural change or replacement of fixtures like toilets, tubs, cabinets, or sink</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRecentPurchaseTrendsQues5" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">As part of new construction work where you built an addition to your existing home</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRecentPurchaseTrendsQues6" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">As part of new construction work where you built a new house</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRecentPurchaseTrendsQues7" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>   
+  </div>
+  <span class="note"><b>Low Base</b> shown if base size <75.</span>

@@ -1,0 +1,586 @@
+<div class="col-md-12 float-left mt-5 pt-4">
+  <app-loader [show]="showLoader"></app-loader>
+  <app-chart-container *ngFor="let config of demographicChartConfigArray" [chart]="config" [updateData]="onDataUpdate"
+    style="display: none;"></app-chart-container>
+  <app-filter-chip-list></app-filter-chip-list>
+  <h3 *ngIf="selectedTab=='Demographics'" class="mt-2 mb-2 float-left col-5 pt-1 pos-rel"
+    style="font-size: 24px;color:#29a84a">Demographics <i class="font-xs text-dark ml-2">Base: Total</i>
+  </h3>
+  <h3 *ngIf="selectedTab=='MRIBlock'" class="mt-2 mb-2 float-left col-5 pt-1 pos-rel"
+    style="font-size: 24px;color:#29a84a">MRI Blocks
+  </h3>
+  <div class="float-right  mt-1" *ngIf="selectedTab=='Demographics'"><span class="mr-4"><i
+        class="fa fa-caret-up text-success mr-2 fa-2x"></i> <i
+        class="fa-2x fa fa-caret-down text-danger mr-2"></i><span>Significant @ 95% level</span></span>
+    <i hidden class="fa fa-download font-sm border rounded p-2 clickable mr-2" title="Download Regression Analysis"></i>
+    <i hidden class="fa fa-table font-sm border rounded p-2 clickable mr-2" title="Switch to Table View"></i>
+    <i hidden class="fa fa-line-chart font-sm border rounded p-2 clickable" title="Switch to Trended View"></i>
+    <div class="float-right">
+      <!-- <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                style="height:20px;" (click)=downloadExcelFile() /> -->
+      <!-- <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                        style="height:20px;" /> -->
+    </div>
+  </div>
+  <div class="clearfix"></div>
+  <div class="col-12 overflow">
+    <nav class="nav nav-pills">
+      <a class="nav-item nav-link active1 clickable border  border-bottom-0" [class.active1]="viewMode == 'tab1'"
+        rel="tab1" (click)="changeTable('Demographics','tab1')">
+        Demographics
+      </a>
+      <a class="nav-item nav-link clickable border border-bottom-0" [class.active1]="viewMode == 'tab2'" rel="tab2"
+        (click)="changeTable('MRIBlock','tab2')">
+        MRI Block
+      </a>
+    </nav>
+    <div class="tab-content" id="myTabContent">
+      <div id="tab1" class="hideTab active border mb-2" [class.active]="viewMode == 'tab1'">
+        <div class="mt-4">
+          <div class="col-5 float-left pl-0">
+            <div class="col-md-5 float-left">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">GENDER
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(genderData,'Gender')">
+                    <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                      style="height:20px;" (click)="pptexportgender('DemographicsGenderPPT.zip')" /></div>
+
+                  <div class="titleOnHover"><b>GENDER</b>: SCREEN_GENDER</div>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="card-body border">
+                  <table class="tabel w-100 base pos-rel">
+                    <tr>
+                      <td class="text-center p-2 border-top-0" *ngFor="let gender of genderData" style="height:130px;">
+                        <div class="font-md">{{gender.Score | scoreAndBase :gender.Base}}
+                        </div>
+                        <i class="fa fa-4x"
+                          [ngClass]="{'fa-male':gender.SeriesName == 'Male','fa-female':gender.SeriesName == 'Female'}"></i>
+                        <div *ngIf="gender.isSignificance != undefined && (gender.Score | showSigTest :gender.compareScore) !== 0" class="col-2 float-left sigbase">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                            *ngIf="(gender.Score | showSigTest :gender.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                            *ngIf="(gender.Score | showSigTest :gender.compareScore) === 1"></i>
+                          <div class="baseCount">Comparison Score: {{gender.compareScore | scoreAndBase}}
+                            <br><span>Comparison Base: {{gender.compareBase}}</span>
+                          </div>
+                        </div>
+                        <div class="baseCount">Base: {{gender.Base}}</div>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7 float-left p-0">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">AGE
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(ageData,'Age')">
+                    <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                      style="height:20px;" (click)="pptAge('DemographicsAgePPT.zip')" />
+                  </div>
+
+                  <div class="titleOnHover"><b>AGE</b>: SCREEN_AGE</div>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="border p-2">
+                  <table class="table w-100 mb-0" style="height:150px;">
+                    <tr>
+                      <td class="text-center border-top-0  pos-rel base" *ngFor="let ageDetail of ageData">
+                        <div style="background-color: #fff;width:100%" [style.height.%]="100-40-ageDetail.Score"
+                          [ngClass]="{'hide' :(ageDetail.Score | scoreAndBase :ageDetail.Base) == 'Low base'}"></div>
+                        <div class="text-center LowBase" [style.height.%]="50"
+                          [ngClass]="{'hide' :(ageDetail.Score | scoreAndBase :ageDetail.Base) != 'Low base'}">Low Base
+                        </div>
+                        <div [ngClass]="{'hide' :(ageDetail.Score | scoreAndBase :ageDetail.Base) == 'Low base'}">
+                          {{ageDetail.Score | scoreAndBase :ageDetail.Base}}</div>
+                        <div style="background-color: #868585;width:100%" [style.height.%]="ageDetail.Score"
+                          [ngClass]="{'hide' :(ageDetail.Score | scoreAndBase :ageDetail.Base) == 'Low base'}"></div>
+                        <div class="mt-2">{{ageDetail.SeriesName}}</div>
+                        <div class="baseCount"
+                          [ngClass]="{'hide' :(ageDetail.Score | scoreAndBase :ageDetail.Base) == 'Low base'}">Base:
+                          {{ageDetail.Base}}</div>
+                          <div  class="col-12 float-left sigbase" style="height:15px">
+                        <div *ngIf="ageDetail.isSignificance != undefined && (ageDetail.Score | showSigTest :ageDetail.compareScore) !== 0"
+                          [ngClass]="{'hide' :(ageDetail.Score | scoreAndBase :ageDetail.Base) == 'Low base'}">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                            *ngIf="(ageDetail.Score | showSigTest :ageDetail.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                            *ngIf="(ageDetail.Score | showSigTest :ageDetail.compareScore) === 1"></i>
+                          <div class="baseCount">Comparison Score: {{ageDetail.compareScore | scoreAndBase}}
+                            <br><span>Comparison Base: {{ageDetail.compareBase}}</span>
+                          </div>
+                        </div>
+                      </div>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+
+
+              </div>
+            </div>
+            <div class="clearfix"></div>
+          </div>
+          <div class="col-2 float-left p-0">
+            <div class="border-top-0 border-bottom-0">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">AVERAGE INCOME
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(averageIncomeDataExcel,'Average Income')">
+                    <!-- <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable" style="height:20px;"
+                                            (click)="pptAverageincome()" />     -->
+                  </div>
+
+                  <div class="titleOnHover"><b>AVERAGE INCOME</b>: HHINC</div>
+                  <div class="clearfix"></div>
+
+                  <div class="text-center green base pos-rel  border p-4 mt-2"
+                    style="font-size: 2.5rem!important;height:166px;">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(averageIncomeData.Score | scoreAndBase :averageIncomeData.Base) != 'Low base'}">
+                      Low Base</div>
+                    <div class="mt-5"
+                      [ngClass]="{'hide' :(averageIncomeData.Score | scoreAndBase :averageIncomeData.Base) == 'Low base'}">
+                      ${{averageIncomeData.Score | scoreAndBase :averageIncomeData.Base}}k</div>
+                    <div class="baseCount">Base: {{averageIncomeData.Base}}</div>
+                  </div>
+
+                  <div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-5 float-left p-0">
+            <div class="card-body p-0">
+              <div class="card-header green font-weight-bold pt-0 pos-rel">INCOME BREAKS
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="downloadExcelFile(incomeData,'Income Breaks')" />
+                  <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable" style="height:20px;"
+                    (click)="pptexporIncome('DemographicsIncomeBreakPPT.zip')" />
+                </div>
+
+                <div class="titleOnHover"><b>INCOME BREAKS</b>: HHINC</div>
+
+                <div class="clearfix"></div>
+              </div>
+
+              <div class="border p-2 mr-3">
+                <table class="table w-100 mb-0" style="height:150px;">
+                  <tr>
+                    <td class="text-center border-top-0  base pos-rel" *ngFor="let incomeDetail of incomeData">
+                      <div style="background-color: transparent;width:100%" [style.height.%]="100-57-incomeDetail.Score"
+                        [ngClass]="{'hide' :(incomeDetail.Score | scoreAndBase :incomeDetail.Base) == 'Low base'}">
+                      </div>
+                      <div class="text-center LowBase" [style.height.%]="50"
+                        [ngClass]="{'hide' :(incomeDetail.Score | scoreAndBase :incomeDetail.Base) != 'Low base'}">Low
+                        Base</div>
+                      <div [ngClass]="{'hide' :(incomeDetail.Score | scoreAndBase :incomeDetail.Base) == 'Low base'}">
+                        {{incomeDetail.Score | scoreAndBase :incomeDetail.Base}}</div>
+                      <div style="background-color: #868585;width:100%" [style.height.%]="incomeDetail.Score"
+                        [ngClass]="{'hide' :(incomeDetail.Score | scoreAndBase :incomeDetail.Base) == 'Low base'}">
+                      </div>
+                      <div style="letter-spacing: initial;height: 35px;line-height: initial;" class="mt-2">
+                        {{incomeDetail.SeriesName}}
+                      </div>
+                      <div class="baseCount">Base: {{incomeDetail.Base}}</div>
+                      <div class="col-12 float-left sigbase" style="height:15px;">
+                      <div *ngIf="incomeDetail.isSignificance != undefined && (incomeDetail.Score | showSigTest :incomeDetail.compareScore) !== 0">
+                        <i class="fa fa-caret-down text-danger fa-2x"
+                          *ngIf="(incomeDetail.Score | showSigTest :incomeDetail.compareScore) === (-1)"></i>
+                        <i class="fa fa-caret-up text-success fa-2x"
+                          *ngIf="(incomeDetail.Score | showSigTest :incomeDetail.compareScore) === 1"></i>
+                        <div class="baseCount">Comparison Score: {{incomeDetail.compareScore | scoreAndBase}}
+                          <br><span>Comparison Base: {{incomeDetail.compareBase}}</span>
+                        </div>
+                      </div>
+                    </div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+            </div>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="mt-4">
+          <div class="col-4 float-left">
+            <div class="border-top-0 border-bottom-0">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">MARITAL STATUS
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(martialDataExcel,'Martial Status')">
+                    <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                      style="height:20px;" (click)="pptMaritalstatus('DemographicsMaritalPPT.zip')" />
+                  </div>
+                  <div class="titleOnHover"><b>MARITAL STATUS</b>: DEMO_MARITAL</div>
+
+                  <div class="clearfix"></div>
+                </div>
+                <div class="card-body p-0" style=" padding-bottom: 0;">
+                  <table class="w-100 table table-bordered">
+                    <tr *ngFor="let status of martialData">
+                      <td class="text-right">
+                        {{status.SeriesName}}
+                      </td>
+                      <td class="pos-rel base" style="width:60%;">
+                        <div class="text-center LowBase"
+                          [ngClass]="{'hide' :(status.Score | scoreAndBase :status.Base) != 'Low base'}">Low Base</div>
+                        <div class="col-2 float-left pos-rel"
+                          [ngClass]="{'hide' :(status.Score | scoreAndBase :status.Base) == 'Low base'}">
+                          <div class="bar-score">{{status.Score | scoreAndBase :status.Base}}
+                          </div>
+                        </div>
+                        <div class="col-8 float-left p-0 barBox"
+                          [ngClass]="{'hide' :(status.Score | scoreAndBase :status.Base) == 'Low base'}">
+                          <div class="bar-width" [style.width.%]="status.Score"></div>
+                        </div>
+                        <div *ngIf="status.isSignificance != undefined && (status.Score | showSigTest :status.compareScore) !== 0" class="col-2 float-left sigbase">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                            *ngIf="(status.Score | showSigTest :status.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                            *ngIf="(status.Score | showSigTest :status.compareScore) === 1"></i>
+                          <div class="baseCount">Comparison Score: {{status.compareScore | scoreAndBase}}
+                            <br><span>Comparison Base: {{status.compareBase}}</span>
+                          </div>
+                        </div>
+                        <div class="baseCount"
+                          [ngClass]="{'hide' :(status.Score | scoreAndBase :status.Base) == 'Low base'}">Base:
+                          {{status.Base}}</div>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 float-left">
+            <div class="border-top-0 border-bottom-0">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">RECENT BUYER
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(recentBuyerData,'Recent Buyer')">
+                    <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                      style="height:20px;" (click)="pptexportRecentBuyer('DemographicsrecentBuyer_PPT.zip')" />
+                  </div>
+                  <div class="titleOnHover"><b>RECENT BUYER</b>: </div>
+
+                  <div class="clearfix"></div>
+                </div>
+                <div class="card-body p-0" style=" padding-bottom: 0;">
+                  <table class="w-100 table table-bordered">
+
+                    <tr *ngFor="let recentbuyer of recentBuyerData">
+                      <td class="text-right">
+                        {{recentbuyer.SeriesName}}
+                      </td>
+                      <td class="pos-rel base" style="width:60%;">
+                        <div class="text-center LowBase"
+                          [ngClass]="{'hide' :(recentbuyer.Score | scoreAndBase :recentbuyer.Base) != 'Low base'}">Low
+                          Base</div>
+                        <div class="col-2 float-left pos-rel"
+                          [ngClass]="{'hide' :(recentbuyer.Score | scoreAndBase :recentbuyer.Base) == 'Low base'}">
+                          <div class="bar-score">
+                            {{recentbuyer.Score | scoreAndBase :recentbuyer.Base}}
+                          </div>
+                        </div>
+                        <div class="col-8 float-left p-0 barBox"
+                          [ngClass]="{'hide' :(recentbuyer.Score | scoreAndBase :recentbuyer.Base) == 'Low base'}">
+                          <div class="bar-width" [style.width.%]="recentbuyer.Score">
+                          </div>
+                        </div>
+                        <div *ngIf="recentbuyer.isSignificance != undefined && (recentbuyer.Score | showSigTest :recentbuyer.compareScore) !== 0" class="col-2 float-left sigbase">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                            *ngIf="(recentbuyer.Score | showSigTest :recentbuyer.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                            *ngIf="(recentbuyer.Score | showSigTest :recentbuyer.compareScore) === 1"></i>
+                          <div class="baseCount">Comparison Score: {{recentbuyer.compareScore | scoreAndBase}}
+                            <br><span>Comparison Base: {{recentbuyer.compareBase}}</span>
+                          </div>
+                        </div>
+                        <div class="baseCount"
+                          [ngClass]="{'hide' :(recentbuyer.Score | scoreAndBase :recentbuyer.Base) == 'Low base'}">Base:
+                          {{recentbuyer.Base}}</div>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 float-left">
+            <div class="border-top-0 border-bottom-0">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">INTENDER
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(intenderBuyerData,'Intender Buyer')">
+                    <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="pptexportIntenderBuyer('DemographicsIntenderBuyer_ppt.zip')">
+
+                  </div>
+                  <div class="titleOnHover"><b>INTENDER</b>: </div>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="card-body p-1" style=" padding-bottom: 0;">
+                  <table class="w-100 table table-bordered">
+                    <tr *ngFor="let intender of intenderBuyerData">
+                      <td class="text-right">
+                        {{intender.SeriesName}}
+                      </td>
+                      <td class="pos-rel base" style="width:60%;">
+                        <div class="text-center LowBase"
+                          [ngClass]="{'hide' :(intender.Score | scoreAndBase :intender.Base) != 'Low base'}">Low Base
+                        </div>
+                        <div class="col-2 float-left pos-rel"
+                          [ngClass]="{'hide' :(intender.Score | scoreAndBase :intender.Base) == 'Low base'}">
+                          <div class="bar-score">
+                            {{intender.Score | scoreAndBase :intender.Base}}</div>
+                        </div>
+                        <div class="col-8 float-left p-0 barBox"
+                          [ngClass]="{'hide' :(intender.Score | scoreAndBase :intender.Base) == 'Low base'}">
+                          <div class="bar-width" [style.width.%]="intender.Score">
+                          </div>
+                        </div>
+                        <div *ngIf="intender.isSignificance != undefined && (intender.Score | showSigTest :intender.compareScore) !== 0" class="col-2 float-left sigbase">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                            *ngIf="(intender.Score | showSigTest :intender.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                            *ngIf="(intender.Score | showSigTest :intender.compareScore) === 1"></i>
+                          <div class="baseCount">Comparison Score: {{intender.compareScore | scoreAndBase}}
+                            <br><span>Comparison Base: {{intender.compareBase}}</span>
+                          </div>
+                        </div>
+                        <div class="baseCount"
+                          [ngClass]="{'hide' :(intender.Score | scoreAndBase :intender.Base) == 'Low base'}">Base:
+                          {{intender.Base}}</div>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <div class="clearfix"></div>
+            </div>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+        <div class="mt-4">
+          <div class="col-4 float-left">
+            <div class="border-top-0 border-bottom-0">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">AREA
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(areaData,'Area')" />
+                    <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="pptAreaexport('DemographicsArea_ppt.zip')">
+
+                  </div>
+
+                  <div class="titleOnHover"><b>AREA</b>: DEMO_HOME_AREA</div>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="card-body border">
+                  <app-chart-container [chart]="areaPieChartConfig" [updateData]="onDataUpdate">
+                  </app-chart-container>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 float-left">
+            <div class="border-top-0 border-bottom-0">
+              <div class="card" style="margin-bottom: 0;">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">AVERAGE PEOPLE IN HOUSEHOLD
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable"
+                      style="height:20px;" (click)="downloadExcelFile(houseHoldDataExcel,'AVERAGE PEOPLE IN HOUSEHOLD')">
+                    <!-- <img src="../../../assets/images/ppt.png" title="Download Excel"
+                                            class="mr-2 clickable ml-2 mt-1" style="height:20px;"
+                                            (click)="pptAveragePeople()"> -->
+                  </div>
+
+                  <div class="titleOnHover"><b>AVERAGE PEOPLE IN HOUSEHOLD</b>: DEMO_HHSIZE</div>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="text-center green border p-5" style="font-size: 2.5rem;">
+                  <div class="text-center LowBase" [ngClass]="{'hide' :(houseHoldData.Score) != 'Low base'}">Low Base
+                  </div>
+                  <div [ngClass]="{'hide' :(houseHoldData.Score) == 'Low base'}">{{houseHoldData.Score}}</div>
+
+                  <div class="baseCount">Base: {{houseHoldData.Base}}</div>
+                  <div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+            <div class="border-top-0 border-bottom-0 mt-4">
+              <div class="card" style="margin-bottom: 0;">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">REGION
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(regionData,'Region')">
+                    <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="pptRegion('DemographicsRegion_PPT.zip')">
+                  </div>
+
+                  <div class="titleOnHover"><b>REGION</b>: </div>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="card-body p-1 border" style=" padding-bottom: 0;">
+                  <table class="table w-100" style="height:225px; table-layout:fixed">
+                    <tr>
+                      <td class="text-center border-top-0 base pos-rel" *ngFor="let regionPlace of regionData">
+                        <div class="text-center LowBase" [style.height.%]="30"
+                          [ngClass]="{'hide' :(regionPlace.Score | scoreAndBase :regionPlace.Base) != 'Low base'}">Low
+                          Base</div>
+                        <div style="background-color: #fff;width:100%" [style.height.%]="100-25-regionPlace.Score"
+                          [ngClass]="{'hide' :(regionPlace.Score | scoreAndBase :regionPlace.Base) == 'Low base'}">
+                        </div>
+                        <div [ngClass]="{'hide' :(regionPlace.Score | scoreAndBase :regionPlace.Base) == 'Low base'}">
+                          {{regionPlace.Score | scoreAndBase :regionPlace.Base}}</div>
+                        <div style="background-color: #868585;width:100%"
+                          [ngClass]="{'hide' :(regionPlace.Score | scoreAndBase :regionPlace.Base) == 'Low base'}"
+                          [style.height.%]="regionPlace.Score">
+                        </div>
+                        <div>{{regionPlace.SeriesName}}</div>
+                        <div *ngIf="regionPlace.isSignificance != undefined && (regionPlace.Score | showSigTest :regionPlace.compareScore) !== 0" class="col-2 float-left sigbase">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                            *ngIf="(regionPlace.Score | showSigTest :regionPlace.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                            *ngIf="(regionPlace.Score | showSigTest :regionPlace.compareScore) === 1"></i>
+                          <div class="baseCount">Comparison Score: {{regionPlace.compareScore | scoreAndBase}}
+                            <br><span>Comparison Base: {{regionPlace.compareBase}}</span>
+                          </div>
+                        </div>
+                        <div class="baseCount">Base: {{regionPlace.Base}} </div>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 float-left">
+            <div class="border-top-0 border-bottom-0">
+              <div class="card">
+                <div class="card-header green font-weight-bold pt-0 pos-rel">KIDS IN HOUSEHOLD
+                  <div class="float-right">
+                    <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="downloadExcelFile(kidsHouseHoldData,'Kids in Household')">
+                    <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                      style="height:20px;" (click)="pptkidshousehold('DemographicsHouseHold_PPT.zip')">
+                  </div>
+
+                  <div class="titleOnHover"><b>KIDS IN HOUSEHOLD</b>: DEMO_HHKIDS </div>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="card-body base border">
+                  <app-chart-container [chart]="childrenPieChartConfig" [updateData]="onDataUpdate">
+                  </app-chart-container>
+                  <!-- <div class="baseCount">Base: 2431</div> -->
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+      <div id="tab2" class="hideTab border" [class.active]="viewMode == 'tab2'">
+        <div class="col-12 float-left">
+          <div class="border-top-0 border-bottom-0 mt-4">
+            <div class="card" style="margin-bottom: 0;">
+              <div class="card-header green font-weight-bold pt-0 pos-rel">OPINIONS ON LIFESTYLE
+                <i class="font-xs ml-2 text-dark">Base: Total</i>
+                <div class="float-right base">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="MriDownloadExcelFile(OpinionsData,'Opinions',mriOpinionMapping)">
+                  <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="pptOpinion('MRI_OpinionPPT.zip')">
+
+                </div>
+                <div class="clearfix"></div>
+              </div>
+              <div class="card-body p-0 base pos-rel">
+                <app-chart-container [chart]="opinionChartConfig" [updateData]="onDataUpdate">
+                </app-chart-container>
+                <div class="baseCount">Base: {{mriOpinionBase}}</div>
+
+              </div>
+              <div class="card-header green font-weight-bold pt-0 pos-rel">
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;"
+                    (click)="MriDownloadExcelFile(SecondOpinionsData,'SecondOpinions',mriSecondOpinionMapping)">
+                  <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="pptSecondOpinionsData('MRI_SecondOpinion_PPT.zip')">
+                </div>
+                <div class="clearfix"></div>
+              </div>
+              <div class="card-body p-0 base pos-rel">
+                <app-chart-container [chart]="secondOpinionChartConfig" [updateData]="onDataUpdate">
+                </app-chart-container>
+                <div class="baseCount">Base: {{mriSecondOpinionBase}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 float-left pl-0">
+          <div class="border-top-0 border-bottom-0  mt-4 col-6 float-left">
+            <div class="card" style="margin-bottom: 0;">
+              <div class="card-header green font-weight-bold pt-0 pos-rel">GREAT DEAL OF KNOWLEDGE IN THIS
+                AREA <i class="font-xs ml-2 text-dark">Base: Total</i>
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="downloadExcelFile(knowledgeAreaData,'Knowledge Area')">
+                  <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="pptSecondknowledgeAreaData('MRI_KnowledgeSharingPPT.zip')">
+                </div>
+                <div class="clearfix"></div>
+              </div>
+              <div class="card-body p-0 base">
+                <app-chart-container [chart]="knowledgeAreaChart" [updateData]="onDataUpdate">
+                </app-chart-container>
+                <div class="baseCount">Base: {{mriknowledgeSharingBase}}</div>
+              </div>
+            </div>
+          </div>
+          <div class="border-top-0 border-bottom-0 mt-4 col-6 float-left">
+            <div class="card" style="margin-bottom: 0;">
+              <div class="card-header green font-weight-bold pt-0 pos-rel">PEOPLE TRUST MY ADVICE ON THIS
+                TOPIC<i class="font-xs ml-2 text-dark">Base: Total</i>
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="downloadExcelFile(adviceOnTopicsData,'Advice on Topics')">
+                  <img src="../../../assets/images/ppt.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+                    style="height:20px;" (click)="pptadviceOnTopicsDataAreaData('MRI_AdviceOnTopic_ppt.zip')">
+                </div>
+                <div class="clearfix"></div>
+              </div>
+              <div class="card-body p-0 base">
+                <app-chart-container [chart]="adviceOnTopicsChart" [updateData]="onDataUpdate">
+                </app-chart-container>
+                <div class="baseCount">Base: {{mriAdviceOnTopicBase}}</div>
+              </div>
+            </div>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 p-0" hidden>
+    Trended View
+  </div>
+  <div class="clearfix"></div>
+  <span class="note"><b>Low Base</b> shown if base size <75.</span>
+</div>

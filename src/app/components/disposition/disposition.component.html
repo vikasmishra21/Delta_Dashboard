@@ -1,0 +1,1354 @@
+<div class="col-md-12 float-left  mt-5 pt-4 pb-4">
+  <app-loader [show]="showLoader"></app-loader>
+  <!-- <app-filter-chip-list></app-filter-chip-list> -->
+
+  <div *ngIf="!showChart" id="chartView">
+    <app-filter-chip-list></app-filter-chip-list>
+    <div class="text-right float-right"> <i class="fa fa-caret-up text-success mr-1 fa-2x"></i>/
+      <i class="fa-2x fa fa-caret-down text-danger mr-2"></i><span class="font-sm">Significant @ 95% level</span>
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <h3 class="mt-2 mb-2 float-left col-7 pt-1" style="font-size: 24px;color:#29a84a">Purchase Disposition (%) -
+      {{Category}} <i class="font-xs ml-2 text-dark ">Base: Recent {{Category}} replacement / remodel</i>
+    </h3>
+
+    <div class="float-right mt-1">
+      <!-- <span class="mr-4"><i class="fa fa-caret-up text-success mr-2 fa-2x"></i> <i
+                        class="fa-2x fa fa-caret-down text-danger mr-2"></i><span>Significant @ 95% level</span></span><i
+                    class="fa fa-line-chart font-sm border rounded p-2 clickable" hidden title="Switch to Trended View"></i> -->
+      <div class="float-right">
+        <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable"
+          (click)="downloadExcelFile();" style="height:20px;" />
+        <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable" (click)="downloadPPT()"
+          style="height:20px;" />
+      </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="col-12 overflow">
+      <nav class="nav nav-pills nav-justified">
+        <a class="nav-item nav-link active1 clickable border  border-bottom-0 pos-rel"
+          [class.active1]="viewMode == 'tab1'" rel="tab1" (click)="changeTable('Influenced','tab1')">
+          Who Influenced ?
+          <div class="titleOnHover" *ngIf="Category == 'Faucet'"><b>Who Influenced</b>: RPF_FAU_RECENT_FAU_12</div>
+          <div class="titleOnHover" *ngIf="Category == 'Showerhead'"><b>Who Influenced</b>: RPF_SHD_RECENT_SHD_12</div>
+          <div class="titleOnHover" *ngIf="Category == 'Toilet'"><b>Who Influenced</b>: RPF_TOI_RECENT_TOI_12</div>
+        </a>
+        <a class="nav-item nav-link clickable border  border-bottom-0 pos-rel" [class.active1]="viewMode == 'tab2'"
+          rel="tab2" (click)="changeTable('Installed','tab2')">
+          Who Installed ?
+          <div class="titleOnHover" *ngIf="Category == 'Faucet'"><b>Who Installed</b>: RPF_FAU_RECENT_FAU8</div>
+          <div class="titleOnHover" *ngIf="Category == 'Showerhead'"><b>Who Installed</b>: RPF_SHD_RECENT_SHD8</div>
+          <div class="titleOnHover" *ngIf="Category == 'Toilet'"><b>Who Installed</b>: RPF_TOI_RECENT_TOI8</div>
+        </a>
+        <a class="nav-item nav-link clickable border  border-bottom-0 pos-rel" [class.active1]="viewMode == 'tab3'"
+          rel="tab3" (click)="changeTable('Purchase','tab3')">
+          Purchase Price
+          <div class="titleOnHover" *ngIf="Category == 'Faucet'"><b>Purchase Price</b>: RPF_FAU_RECENT_FAU10</div>
+          <div class="titleOnHover" *ngIf="Category == 'Showerhead'"><b>Purchase Price</b>: RPF_SHD_RECENT_SHD10</div>
+          <div class="titleOnHover" *ngIf="Category == 'Toilet'"><b>Purchase Price</b>: RPF_TOI_RECENT_TOI10</div>
+        </a>
+        <a class="nav-item nav-link clickable border  border-bottom-0 pos-rel" [class.active1]="viewMode == 'tab4'"
+          rel="tab4" (click)="changeTable('Bought','tab4')">
+          Where Bought/Shopped ?
+          <div class="titleOnHover" *ngIf="Category == 'Faucet'"><b>Where Bought/Shopped</b>: RECENT_FAU13a_NEW_1 ,
+            RECENT_FAU13b_NEW_CAT_1_1</div>
+          <div class="titleOnHover" *ngIf="Category == 'Showerhead'"><b>Where Bought/Shopped</b>: RECENT_SHD13a_NEW_1 ,
+            RECENT_SHD13b_NEW_CAT_1_1</div>
+          <div class="titleOnHover" *ngIf="Category == 'Toilet'"><b>Where Bought/Shopped</b>: RECENT_TOI13a_NEW_1 ,
+            RECENT_TOI13b_NEW_CAT_1_1</div>
+
+        </a>
+        <a class="nav-item nav-link clickable border  border-bottom-0 pos-rel" [class.active1]="viewMode == 'tab5'"
+          rel="tab5" (click)="changeTable('Reasons','tab5')">
+          Reasons for brand choice
+          <div class="titleOnHover" *ngIf="Category == 'Faucet'"><b>Reasons for brand choice</b>: RPF_FAU_RECENT_FAU9
+          </div>
+          <div class="titleOnHover" *ngIf="Category == 'Showerhead'"><b>Reasons for brand choice</b>:
+            RPF_SHD_RECENT_SHD9</div>
+          <div class="titleOnHover" *ngIf="Category == 'Toilet'"><b>Reasons for brand choice</b>: RPF_TOI_RECENT_TOI9
+          </div>
+        </a>
+      </nav>
+      <div class="tab-content" id="myTabContent">
+        <div id="tab1" class="hideTab activeTab border" [class.activeTab]="viewMode == 'tab1'">
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab1'" [chart]="InfluencedDataChart"
+            [updateData]="onDataUpdateInfluence" style="display: none">
+          </app-chart-container>
+          <table class="table table-bordered brandHealth w-100 table-fixed mb-0">
+            <tr class="brandList">
+              <td></td>
+              <td *ngFor="let brand of brandList"><img src="{{brand}}" /></td>
+            </tr>
+            <tr *ngFor="let row of InfluencedDataArray">
+              <td class="text-right pos-rel"><label>{{row.sereiseName}}</label></td>
+              <td class="text-center base" *ngFor="let col of row.sereiseData; let i = index;">
+                <div class="text-center LowBase"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InfluencedBase[i]) != 'Low base'}">Low Base</div>
+                <div class="col-3 float-left pos-rel"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InfluencedBase[i]) == 'Low base'}">
+                  <div class="bar-score">{{col | scoreAndBase :InfluencedBase[i]}}</div>
+                </div>
+                <div class="col-9 float-left p-0 barBox"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InfluencedBase[i]) == 'Low base'}">
+                  <div class="bar-width" [style.width.%]="col"></div>
+                </div>
+                <div *ngIf="row.compareScore.length >0 && (col | showSigTest :row.compareScore[i]) !== 0"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InfluencedBase[i]) == 'Low base'}">
+                  <div *ngIf="row.isSignificance[i] != undefined" class="col-2 float-left sigbase">
+                    <i class="fa fa-caret-down text-danger fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[i]) === (-1)"></i>
+                    <i class="fa fa-caret-up text-success fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[i]) === 1"></i>
+                    <div class="baseCount">Comparison Score: {{row.compareScore[i] | scoreAndBase}}
+                      <br><span>Comparison Base: {{row.compareBase[i]}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="baseCount" [ngClass]="{'hide' :(col | scoreAndBase :InfluencedBase[i]) == 'Low base'}">Base: {{InfluencedBase[i]}}</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div id="tab2" class="hideTab border" [class.activeTab]="viewMode == 'tab2'">
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab2'" [chart]="installedDataChart"
+            [updateData]="onDataUpdateInstalled" style="display: none">
+          </app-chart-container>
+          <table class="table table-bordered brandHealth w-100 table-fixed mb-0">
+            <tr class="brandList">
+              <td></td>
+              <td *ngFor="let brand of brandList"><img src="{{brand}}" /></td>
+            </tr>
+            <tr *ngFor="let row of InstalledDataArray">
+              <td class="text-right pos-rel"><label>{{row.sereiseName}}</label></td>
+              <td class="text-center base" *ngFor="let col of row.sereiseData; let i = index;">
+                <div class="text-center LowBase"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InstalledBase[i]) != 'Low base'}">Low Base</div>
+                <div class="col-3 float-left pos-rel"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InstalledBase[i]) == 'Low base'}">
+                  <div class="bar-score">{{col | scoreAndBase :InstalledBase[i]}}</div>
+                </div>
+                <div class="col-9 float-left p-0 barBox"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InstalledBase[i]) == 'Low base'}">
+                  <div class="bar-width" [style.width.%]="col"></div>
+                </div>
+                <div *ngIf="row.compareScore.length >0 && (col | showSigTest :row.compareScore[i]) !== 0"
+                  [ngClass]="{'hide' :(col | scoreAndBase :InstalledBase[i]) == 'Low base'}">
+                  <div *ngIf="row.isSignificance[i] != undefined" class="col-2 float-left sigbase">
+                    <i class="fa fa-caret-down text-danger fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[i]) === (-1)"></i>
+                    <i class="fa fa-caret-up text-success fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[i]) === 1"></i>
+                    <div class="baseCount">Comparison Score: {{row.compareScore[i] | scoreAndBase}}
+                      <br><span>Comparison Base: {{row.compareBase[i]}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="baseCount" [ngClass]="{'hide' :(col | scoreAndBase :InstalledBase[i]) == 'Low base'}">Base: {{InstalledBase[i]}}</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div id="tab3" class="hideTab border" [class.activeTab]="viewMode == 'tab3'">
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab3'" [chart]="purchasePriceChart"
+            [updateData]="onDataUpdatePurchasePrice" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab3'" [chart]="purchaseMedianChart"
+            [updateData]="onDataUpdatePurchasePrice" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab3'" [chart]="purchaseAverageChart"
+            [updateData]="onDataUpdatePurchasePrice" style="display: none">
+          </app-chart-container>
+          <table class="table table-bordered brandHealth w-100 table-fixed mb-0">
+            <tr class="brandList">
+              <td class="text-center pos-rel"></td>
+              <td *ngFor="let brand of brandList"><img src="{{brand}}" /></td>
+            </tr>
+            <tr *ngFor="let row of purchasePriceArray;">
+              <td class="text-center pos-rel"><label>{{row.sereiseName}}</label> </td>
+              <td class="text-center base" *ngFor="let col of row.seriesdata; let i = index;">
+                <div class="text-center LowBase"
+                  [ngClass]="{'hide' :(col | scoreAndBase :PurchasePriceBase[i]) != 'Low base'}">Low Base</div>
+                <div class="col-3 float-left pos-rel"
+                  [ngClass]="{'hide' :(col | scoreAndBase :PurchasePriceBase[i]) == 'Low base'}">
+                  <div class="bar-score">
+                    {{col | scoreAndBase :PurchasePriceBase[i]}}
+                  </div>
+                </div>
+                <div class="col-9 float-left p-0 barBox"
+                  [ngClass]="{'hide' :(col | scoreAndBase :PurchasePriceBase[i]) == 'Low base'}">
+                  <div class="bar-width" [style.width.%]="col"></div>
+                </div>
+                <div *ngIf="row.compareScore.length >0 && (col | showSigTest :row.compareScore[i]) !== 0"
+                  [ngClass]="{'hide' :(col | scoreAndBase :PurchasePriceBase[i]) == 'Low base'}">
+                  <div *ngIf="row.isSignificance[i] != undefined" class="col-2 float-left sigbase">
+                    <i class="fa fa-caret-down text-danger fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[i]) === (-1)"></i>
+                    <i class="fa fa-caret-up text-success fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[i]) === 1"></i>
+                    <div class="baseCount">Comparison Score: {{row.compareScore[i] | scoreAndBase}}
+                      <br><span>Comparison Base: {{row.compareBase[i]}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="baseCount" [ngClass]="{'hide' :(col | scoreAndBase :PurchasePriceBase[i]) == 'Low base'}">Base: {{PurchasePriceBase[i]}}</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="text-center pos-rel"><label> Average ($) </label> </td>
+              <td class="text-center base" *ngFor="let comm of purchaseAverageArray; let i = index;">
+                <div class="col-12 text-center pos-rel" *ngIf="comm != undefined && PurchasePriceBase != undefined">
+                  <div class="LowBase">{{comm| scoreAndBase :PurchasePriceBase[i]}}</div>
+                  <div class="baseCount" *ngIf="comm">Base: {{PurchasePriceBase[i]}}</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="text-center pos-rel"><label> Median ($)</label> </td>
+              <td class="text-center base" *ngFor="let comm of purchaseMedianArray; let i = index;">
+                <div class="col-12 text-center pos-rel" *ngIf="comm != undefined && PurchasePriceBase != undefined">
+                  <div class="LowBase">{{comm| scoreAndBase :PurchasePriceBase[i]}}</div>
+                  <div class="baseCount">Base: {{PurchasePriceBase[i]}}</div>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div id="tab4" class="hideTab border" [class.activeTab]="viewMode == 'tab4'">
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="totalBoughtChartInstore"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="totalShoppedChartInstore"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="totalBoughtChartOnline"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="totalShoppedChartOnline"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="whereBoughtChartTotal"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="whereShoppedChartTotal"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="whereBoughtChartInstoreOnline"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab4'" [chart]="whereShoppedChartInstoreOnline"
+            [updateData]="onDataUpdateBoughtShopped" style="display: none">
+          </app-chart-container>
+          <select class="form-control col-2 float-right" [(ngModel)]="selectedOnPageLoad"
+            (change)="selectChangeHandler($event)">
+            <option value="Total" selected> Total </option>
+            <option value="Instore"> In Store </option>
+            <option value="Online"> Online </option>
+          </select>
+          <div class="clearfix"></div>
+          <table id="brandHeader" [style.width.px]="getContentWidth()"
+            class="table table-bordered brandHealth mt-2 mb-0">
+            <tr class="brandList">
+              <td></td>
+              <td *ngFor="let brand of brandList"><img src="{{brand}}" /></td>
+            </tr>
+          </table>
+          <div class="overflow" [style.height.px]="getContentHeight()">
+            <table id="brandData" *ngIf="ShowData === 'Total'" class="table table-bordered brandHealth w-100">
+              <tr>
+                <td></td>
+                <td *ngFor="let brand of brandList">
+                  <div class="col-6 float-left p-0 text-center">
+                    Bought
+                  </div>
+                  <div class="col-6 float-right p-0 text-center">
+                    Shopped
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right pos-rel"><label> Total In Store(net) </label></td>
+                <td class="text-center" *ngFor="let bought of InstoreTotalBought; let i = index;">
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) != 'Low base'}">Low Base
+                    </div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-score">{{bought | scoreAndBase:TotalInstoreBoughtBase[i]}}</div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-width" [style.width.%]="(bought)"></div>
+                    </div>
+                    <div *ngIf="netIBoughtSig[i] && netIBoughtSig[i] != undefined && (bought | showSigTest :netIBoughtCompareScore[i]) !== 0" 
+                    class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(bought | showSigTest :netIBoughtCompareScore[i])=== (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(bought | showSigTest :netIBoughtCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netIBoughtCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netIBoughtCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalInstoreBoughtBase.length>0"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">Base:
+                      {{TotalInstoreBoughtBase[i]}}</div>
+                  </div>
+                  <div class="col-6 float-left p-0 base" *ngIf="InstoreTotalShopped[i]">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) != 'Low base'}">
+                      Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-score" *ngIf="InstoreTotalShopped[i]">
+                        {{InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-width" *ngIf="InstoreTotalShopped[i]" [style.width.%]="InstoreTotalShopped[i]">
+                      </div>
+                    </div>
+                    <div *ngIf="netIShoppedSig[i] && netIShoppedSig[i] != undefined && (InstoreTotalShopped[i] | showSigTest :netIShoppedCompareScore[i]) !== 0" 
+                    class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(InstoreTotalShopped[i] | showSigTest :netIShoppedCompareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(InstoreTotalShopped[i] | showSigTest :netIShoppedCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netIShoppedCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netIShoppedCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalInstoreShoppedBase.length>0"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      Base: {{TotalInstoreShoppedBase[i]}}</div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right pos-rel"><label> Total Online(net) </label></td>
+                <td class="text-center" *ngFor="let bought of OnlineTotalBought; let i = index;">
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) != 'Low base'}">Low Base
+                    </div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-score">{{bought | scoreAndBase:TotalOnlineBoughtBase[i]}}</div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-width" [style.width.%]="(bought)"></div>
+                    </div>
+                    <div *ngIf="netOBoughtSig[i] && netOBoughtSig[i] != undefined && (bought | showSigTest :netOBoughtCompareScore[i]) !== 0" 
+                    class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(bought | showSigTest :netOBoughtCompareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(bought | showSigTest :netOBoughtCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netOBoughtCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netOBoughtCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalOnlineBoughtBase.length>0"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">Base:
+                      {{TotalOnlineBoughtBase[i]}}</div>
+                  </div>
+                  <div class="col-6 float-left p-0 base" *ngIf="OnlineTotalShopped[i]">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) != 'Low base'}">
+                      Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-score" *ngIf="OnlineTotalShopped[i]">
+                        {{OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-width" *ngIf="OnlineTotalShopped[i]" [style.width.%]="(OnlineTotalShopped[i])">
+                      </div>
+                    </div>
+                    <div *ngIf="netOShoppedSig[i] && netOShoppedSig[i] != undefined && (OnlineTotalShopped[i] | showSigTest :netOShoppedCompareScore[i]) !== 0"
+                     class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(OnlineTotalShopped[i] | showSigTest :netOShoppedCompareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(OnlineTotalShopped[i] | showSigTest :netOShoppedCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netOShoppedCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netOShoppedCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalOnlineShoppedBase.length>0"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      Base: {{TotalOnlineShoppedBase[i]}}</div>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let total of TotalBought; let i = index;">
+                <td class="text-right pos-rel"><label>{{total.sereiesNameTotal}}</label></td>
+                <td class="text-center" *ngFor="let bought of total.sereiseDataTotal; let j = index;">
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:total.totalBoughtBase[j]) != 'Low base'}">Low Base
+                    </div>
+                    <div class="col-5 float-left pos-rel" *ngIf="total.totalBoughtBase[j] != undefined"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:total.totalBoughtBase[j]) == 'Low base'}">
+                      <div class="bar-score">
+                        {{bought | scoreAndBase:total.totalBoughtBase[j]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:total.totalBoughtBase[j]) == 'Low base'}">
+                      <div class="bar-width" [style.width.%]="bought"></div>
+                    </div>
+                    <div *ngIf="total.isSignificance != undefined && total.isSignificance[j] != undefined && (bought | showSigTest :total.compareScore[i]) !== 0"
+                      class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:total.totalBoughtBase[j]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(bought | showSigTest :total.compareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(bought | showSigTest :total.compareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{total.compareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{total.compareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:total.totalBoughtBase[j]) == 'Low base'}">Base:
+                      {{total.totalBoughtBase[j]}}</div>
+                  </div>
+                  <div class="col-6 float-left p-0 base" *ngIf="TotalShopped[i]">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(TotalShopped[i].score[j] | scoreAndBase:TotalShopped[i].base[j]) != 'Low base'}">
+                      Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(TotalShopped[i].score[j] | scoreAndBase:TotalShopped[i].base[j]) == 'Low base'}">
+                      <div class="bar-score" *ngIf="TotalShopped[i]"
+                        [ngClass]="{'LowBaseScore' :(TotalShopped[i].score[j] | scoreAndBase:TotalShopped[i].base[j]) == 'Low base'}">
+                        {{TotalShopped[i].score[j] | scoreAndBase:TotalShopped[i].base[j]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(TotalShopped[i].score[j] | scoreAndBase:TotalShopped[i].base[j]) == 'Low base'}">
+                      <div class="bar-width" *ngIf="TotalShopped[i]" [style.width.%]="TotalShopped[i].score[j]">
+                      </div>
+                    </div>
+                    <div
+                      *ngIf="TotalShopped[i].isSignificance != undefined && TotalShopped[i].isSignificance[j] != undefined && 
+                      (TotalShopped[i].score[j] | showSigTest :TotalShopped[i].compareScore[j]) !==0"
+                      class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(TotalShopped[i].score[j] | scoreAndBase:TotalShopped[i].base[j]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(TotalShopped[i].score[j] | showSigTest :TotalShopped[i].compareScore[j]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(TotalShopped[i].score[j] | showSigTest :TotalShopped[i].compareScore[j]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{TotalShopped[i].compareScore[j] | scoreAndBase}}
+                        <br><span>Comparison Base: {{TotalShopped[i].compareBase[j]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalShopped[i]"
+                      [ngClass]="{'hide' :(TotalShopped[i].score[j] | scoreAndBase:TotalShopped[i].base[j]) == 'Low base'}">
+                      Base: {{TotalShopped[i].base[j]}}</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <table id="brandData" *ngIf="ShowData === 'Instore'" class="table table-bordered brandHealth w-100">
+              <tr>
+                <td></td>
+                <td *ngFor="let brand of brandList">
+                  <div class="col-6 float-left p-0 text-center">
+                    Bought
+                  </div>
+                  <div class="col-6 float-right p-0 text-center">
+                    Shopped
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right pos-rel"><label> Total In Store(net) </label></td>
+                <td class="text-center" *ngFor="let bought of InstoreTotalBought; let i = index;">
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) != 'Low base'}">Low Base
+                    </div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-score">{{bought | scoreAndBase:TotalInstoreBoughtBase[i]}}</div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-width" [style.width.%]="(bought)"></div>
+                    </div>
+                    <div *ngIf="netIBoughtSig[i] && netIBoughtSig[i] != undefined && (bought | showSigTest :netIBoughtCompareScore[i]) !== 0" 
+                    class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(bought | showSigTest :netIBoughtCompareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(bought | showSigTest :netIBoughtCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netIBoughtCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netIBoughtCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalInstoreBoughtBase.length>0"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalInstoreBoughtBase[i]) == 'Low base'}">Base:
+                      {{TotalInstoreBoughtBase[i]}}</div>
+                  </div>
+                  <div class="col-6 float-left p-0 base" *ngIf="InstoreTotalShopped[i]">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) != 'Low base'}">
+                      Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-score" *ngIf="InstoreTotalShopped[i]">
+                        {{InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-width" *ngIf="InstoreTotalShopped[i]" [style.width.%]="InstoreTotalShopped[i]">
+                      </div>
+                    </div>
+                    <div *ngIf="netIShoppedSig[i] && netIShoppedSig[i] != undefined && (InstoreTotalShopped[i] | showSigTest :netIShoppedCompareScore[i]) !== 0" 
+                    class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(InstoreTotalShopped[i] | showSigTest :netIShoppedCompareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(InstoreTotalShopped[i] | showSigTest :netIShoppedCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netIShoppedCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netIShoppedCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalInstoreShoppedBase.length>0"
+                      [ngClass]="{'hide' :(InstoreTotalShopped[i] | scoreAndBase:TotalInstoreShoppedBase[i]) == 'Low base'}">
+                      Base: {{TotalInstoreShoppedBase[i]}}</div>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let instore of InstoreShopped; let i = index;">
+                <td class="text-right pos-rel"><label>{{instore.sereiesName}}</label></td>
+                <td class="text-center" *ngFor="let score of InstoreBought[i].score; let j = index;">
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(score | scoreAndBase:InstoreBought[i].base[j]) != 'Low base'}">Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(score | scoreAndBase:InstoreBought[i].base[j]) == 'Low base'}">
+                      <div class="bar-score">
+                        {{score | scoreAndBase:InstoreBought[i].base[j]}}</div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(score | scoreAndBase:InstoreBought[i].base[j]) == 'Low base'}">
+                      <div class="bar-width" [style.width.%]="score"> </div>
+                    </div>
+                    <div *ngIf="InstoreBought[i].isSignificance != undefined && InstoreBought[i].isSignificance[j] != undefined && (score | showSigTest :InstoreBought[i].compareScore[j]) !== 0"
+                      class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(score | scoreAndBase:InstoreBought[i].base[j]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(score | showSigTest :InstoreBought[i].compareScore[j]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(score | showSigTest :InstoreBought[i].compareScore[j]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{InstoreBought[i].compareScore[j] | scoreAndBase}}
+                        <br><span>Comparison Base: {{InstoreBought[i].compareBase[j]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="(score | scoreAndBase:InstoreBought[i].base[j]) != 'NA'" [ngClass]="{'hide' :(score | scoreAndBase:InstoreBought[i].base[j]) == 'Low base'}">
+                      Base: {{InstoreBought[i].base[j]}}</div>
+                  </div>
+                  <div class="col-6 float-left p-0 base" *ngIf="instore">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(instore.score[j] | scoreAndBase:instore.base[j]) != 'Low base'}">
+                      Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(instore.score[j] | scoreAndBase:instore.base[j]) == 'Low base'}">
+                      <div class="bar-score" *ngIf="instore">
+                        {{instore.score[j] | scoreAndBase:instore.base[j]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(instore.score[j] | scoreAndBase:instore.base[j]) == 'Low base'}">
+                      <div class="bar-width" *ngIf="instore" [style.width.%]="instore.score[j]">
+                      </div>
+                    </div>
+                    <div
+                      *ngIf="instore.isSignificance != undefined && instore.isSignificance[j] != undefined && (instore.score[j] | showSigTest :instore.compareScore[j]) !== 0"
+                      class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(instore.score[j] | scoreAndBase:instore.base[j]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(instore.score[j] | showSigTest :instore.compareScore[j]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(instore.score[j] | showSigTest :instore.compareScore[j]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{instore.compareScore[j] | scoreAndBase}}
+                        <br><span>Comparison Base: {{instore.compareBase[j]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="instore && (instore.score[j] | scoreAndBase:instore.base[j] !='NA')"
+                      [ngClass]="{'hide' :(instore.score[j] | scoreAndBase:instore.base[j]) == 'Low base'}">
+                      Base:{{instore.base[j]}}</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <table id="brandData" *ngIf="ShowData === 'Online'" class="table table-bordered brandHealth w-100">
+              <tr>
+                <td></td>
+                <td *ngFor="let brand of brandList">
+                  <div class="col-6 float-left p-0 text-center">
+                    Bought
+                  </div>
+                  <div class="col-6 float-right p-0 text-center">
+                    Shopped
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right pos-rel"><label> Total Online(net) </label></td>
+                <td class="text-center" *ngFor="let bought of OnlineTotalBought; let i = index;">
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) != 'Low base'}">Low Base
+                    </div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-score">{{bought | scoreAndBase:TotalOnlineBoughtBase[i]}}</div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">
+                      <div class="bar-width" [style.width.%]="(bought)"></div>
+                    </div>
+                    <div *ngIf="netOBoughtSig[i] && netOBoughtSig[i] != undefined && (bought | showSigTest :netOBoughtCompareScore[i]) !== 0" 
+                    class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(bought | showSigTest :netOBoughtCompareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(bought | showSigTest :netOBoughtCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netOBoughtCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netOBoughtCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalOnlineBoughtBase.length>0"
+                      [ngClass]="{'hide' :(bought | scoreAndBase:TotalOnlineBoughtBase[i]) == 'Low base'}">Base:
+                      {{TotalOnlineBoughtBase[i]}}</div>
+                  </div>
+                  <div class="col-6 float-left p-0 base" *ngIf="OnlineTotalShopped[i]">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) != 'Low base'}">
+                      Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-score" *ngIf="OnlineTotalShopped[i]">
+                        {{OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      <div class="bar-width" *ngIf="OnlineTotalShopped[i]" [style.width.%]="(OnlineTotalShopped[i])">
+                      </div>
+                    </div>
+                    <div *ngIf="netOShoppedSig[i] && netOShoppedSig[i] != undefined && (OnlineTotalShopped[i] | showSigTest :netOShoppedCompareScore[i]) !== 0" 
+                    class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(OnlineTotalShopped[i] | showSigTest :netOShoppedCompareScore[i]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(OnlineTotalShopped[i] | showSigTest :netOShoppedCompareScore[i]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{netOShoppedCompareScore[i] | scoreAndBase}}
+                        <br><span>Comparison Base: {{netOShoppedCompareBase[i]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="TotalOnlineShoppedBase.length>0"
+                      [ngClass]="{'hide' :(OnlineTotalShopped[i] | scoreAndBase:TotalOnlineShoppedBase[i]) == 'Low base'}">
+                      Base: {{TotalOnlineShoppedBase[i]}}</div>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let online of OnlineShopped; let i = index;">
+                <td class="text-right pos-rel"><label>{{online.sereiesName}}</label></td>
+                <td class="text-center" *ngFor="let score of OnlineBought[i].score; let j = index;">
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(score | scoreAndBase:OnlineBought[i].base[j]) != 'Low base'}">Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(score | scoreAndBase:OnlineBought[i].base[j]) == 'Low base'}">
+                      <div class="bar-score">
+                        {{score | scoreAndBase:OnlineBought[i].base[j]}}</div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(score | scoreAndBase:OnlineBought[i].base[j]) == 'Low base'}">
+                      <div class="bar-width" [style.width.%]="score"></div>
+                    </div>
+                    <div *ngIf="OnlineBought[i].isSignificance != undefined && OnlineBought[i].isSignificance[j] != undefined && 
+                    (score | showSigTest :OnlineBought[i].compareScore[j]) !== 0"
+                      class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(score | scoreAndBase:OnlineBought[i].base[j]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(score | showSigTest :OnlineBought[i].compareScore[j]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(score | showSigTest :OnlineBought[i].compareScore[j]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{OnlineBought[i].compareScore[j] | scoreAndBase}}
+                        <br><span>Comparison Base: {{OnlineBought[i].compareBase[j]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount"  *ngIf="(score | scoreAndBase:OnlineBought[i].base[j]) != 'NA'" [ngClass]="{'hide' :(score | scoreAndBase:OnlineBought[i].base[j]) == 'Low base'}">
+                      Base: {{OnlineBought[i].base[j]}}</div>
+                  </div>
+                  <div class="col-6 float-left p-0 base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(online.score[j] | scoreAndBase:online.base[j]) != 'Low base'}">
+                      Low Base</div>
+                    <div class="col-5 float-left pos-rel"
+                      [ngClass]="{'hide' :(online.score[j] | scoreAndBase:online.base[j]) == 'Low base'}">
+                      <div class="bar-score" *ngIf="online">
+                        {{online.score[j] | scoreAndBase:online.base[j]}}
+                      </div>
+                    </div>
+                    <div class="col-7 float-left p-0 boxBg"
+                      [ngClass]="{'hide' :(online.score[j] | scoreAndBase:online.base[j]) == 'Low base'}">
+                      <div class="bar-width" *ngIf="online" [style.width.%]="online.score[j]"></div>
+                    </div>
+                    <div *ngIf="online.isSignificance!= undefined && online.isSignificance[j] != undefined &&
+                    (online.score[j] | showSigTest :online.compareScore[j])!== 0"
+                      class="col-2 float-left sigbase"
+                      [ngClass]="{'hide' :(online.score[j] | scoreAndBase:online.base[j]) == 'Low base'}">
+                      <i class="fa fa-caret-down text-danger fa-2x"
+                        *ngIf="(online.score[j] | showSigTest :online.compareScore[j]) === (-1)"></i>
+                      <i class="fa fa-caret-up text-success fa-2x"
+                        *ngIf="(online.score[j] | showSigTest :online.compareScore[j]) === 1"></i>
+                      <div class="baseCount">Comparison Score: {{online.compareScore[j] | scoreAndBase}}
+                        <br><span>Comparison Base: {{online.compareBase[j]}}</span>
+                      </div>
+                    </div>
+                    <div class="baseCount" *ngIf="(online.score[j] | scoreAndBase:online.base[j]) != 'NA'"
+                      [ngClass]="{'hide' :(online.score[j] | scoreAndBase:online.base[j]) == 'Low base'}">
+                      Base: {{online.base[j]}}</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div id="tab5" class="hideTab border" [class.activeTab]="viewMode == 'tab5'">
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab5'" [chart]="reasonForBrandAverageChart"
+            [updateData]="onDataUpdateReasonForChoice" style="display: none">
+          </app-chart-container>
+          <app-chart-container *ngIf="ListOfBrands.length && viewMode == 'tab5'" [chart]="reasonForCategoryChoice"
+            [updateData]="onDataUpdateReasonForChoice" style="display: none">
+          </app-chart-container>
+          <table class="table  border-0 table-fixed w-100 legendtable table-no-border text-center mb-2 mt-2"
+            style="font-size: .85rem;">
+            <tr>
+              <td>Indexed to Overall Market Average</td>
+              <td> <span style="background-color: #92D050" class="legend-box mr-1"></span><span> Overindex: 120 or
+                  higher</span></td>
+              <td> <span style="background-color: #E5F995" class="legend-box mr-1"></span><span>Overindex: 110 -
+                  119</span></td>
+              <td> <span style="background-color: #ffffff" class="legend-box mr-1 border"></span><span>Average: 91 -
+                  109</span></td>
+              <td> <span style="background-color: #FFCCCE" class="legend-box mr-1"></span><span>Underindex: 81 -
+                  90</span></td>
+              <td> <span style="background-color: #FF656D" class="legend-box mr-1"></span><span>Underindex: 80 or
+                  lower</span></td>
+            </tr>
+          </table>
+          <table id="brandHeader" [style.width.px]="getContentWidthNew()"
+            class="table table-bordered brandHealth mt-2 mb-0">
+            <tr class="brandList">
+              <td style="width:200px!important"></td>
+              <td> Overall Market Average</td>
+              <td *ngFor="let brand of brandList"><img src="{{brand}}" /></td>
+            </tr>
+          </table>
+          <div class="overflow" [style.height.px]="getContentHeight()">
+            <table id="brandData1" class="table table-bordered brandHealth w-100 mt-0">
+              <tr *ngFor="let row of reasonfForBrandChoiceArray; let i = index;">
+                <td class="text-right pos-rel" style="width:200px!important"><label>{{row.sereiseName}}</label></td>
+                <td class="text-center">{{row.average}}</td>
+                <td class="text-center base LowBase table-index" *ngFor="let col of row.seriesdata; let j = index;"
+                  [ngClass]="{'text-white' :row.seriesColor[j] !== '#fff' && row.seriesColor[j] !== '#FFCCCE' && row.seriesColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase :ReasonForChoiceBase[j]) == 'Low base'}"
+                  [style.backgroundColor]="row.seriesColor[j]" >{{col | scoreAndBase :ReasonForChoiceBase[j]}}
+                  <div *ngIf="row.isSignificance != undefined && row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                    <i class="fa fa-caret-down text-danger fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                    <i class="fa fa-caret-up text-success fa-2x"
+                      *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+                  </div>
+                  <div class="baseCount" [ngClass]="{'hide' :(col | scoreAndBase :ReasonForChoiceBase[j]) == 'Low base'}">Base: {{ReasonForChoiceBase[j]}}<br>
+                    <span *ngIf="row.isSignificance != undefined && row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                      Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                      <span>Comparison Base: {{row.compareBase[j]}}</span>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+
+  </div>
+
+  <div *ngIf="showTrends" id="trendView">
+    <div class="text-right float-right">
+      <img *ngIf="isShownInfluenced" src="../../../assets/images/ppt.png" title="Download PPT"
+        (click)="downloadPptWhoInfluencedTrendsPptDataTrends()" class="clickable" style="height:20px;" />
+      <img *ngIf="isShownInstalled" src="../../../assets/images/ppt.png" title="Download PPT"
+        (click)="downloadPptWhoInstalledTrendsPptDataTrendsPptDataTrends()" class="clickable" style="height:20px;" />
+      <img *ngIf="isShownPurchasePrice" src="../../../assets/images/ppt.png" title="Download PPT"
+        (click)="downloadPptPurchasePriceTrendsPptDataTrends()" class="clickable" style="height:20px;" />
+      <img *ngIf="isShownBrandChoice" src="../../../assets/images/ppt.png" title="Download PPT"
+        (click)="downloadPptReasonBrandChoiceTrendsPptDataTrends()" class="clickable" style="height:20px;" />
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <div class="row">
+      <div class="col-12">
+
+        <nav class="nav nav-pills border nav-justified">
+          <a class="nav-item nav-link active clickable border-right" [class.active]="periodSeclected == 'tab1Trends'"
+            rel="tab1Trends" (click)="changeTimePeriod('Quarterly','tab1Trends')">
+            Quarterly
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab2Trends'"
+            rel="tab2Trends" (click)="changeTimePeriod('SemiAnnually','tab2Trends')">
+            Semi Annually
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab3Trends'"
+            rel="tab3Trends" (click)="changeTimePeriod('Annually','tab3Trends')">
+            Annually
+          </a>
+        </nav>
+
+      </div>
+    </div>
+    <div class="tab-content" id="myTabContentTrends">
+      <div style="height: 5%;">&nbsp;</div>
+      <div class="row">
+        <div class="col-12">
+          <nav class="nav nav-pills border nav-justified">
+            <a class="nav-item nav-link active clickable border-right" [class.active]="isShownInfluenced === true"
+              (click)="toggleShowInfluenced()">
+              Who Influenced ?
+            </a>
+            <a class="nav-item nav-link clickable border-right" [class.active]="isShownInstalled === true"
+              (click)="toggleShowInstalled()">
+              Who Installed ?
+            </a>
+            <a class="nav-item nav-link clickable border-right" [class.active]="isShownPurchasePrice === true"
+              (click)="toggleShowPurchasePrice()">
+              Purchase Price
+            </a>
+            <a class="nav-item nav-link clickable border-right" [class.active]="isShownBrandChoice === true"
+              (click)="toggleShowBrandChoice()">
+              Reasons for brand choice
+            </a>
+          </nav>
+        </div>
+      </div>
+      <div *ngIf="isShownInfluenced">
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Delta</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsDelta" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Moen</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsMoen" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Kohler</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsKohler" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Peerless</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsPeerless" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">American Standard</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsAS" [updateData]="onDataUpdate"></app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Pfister</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsPfister" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Aqua Source</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsAquaS" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Brizo</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsBrizo" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Glacier Bay</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsGlacier" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Grohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsGrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Hansgrohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsHansgrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Toto</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsToto" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div *ngIf="isShownInstalled">
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Delta</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsDelta" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Moen</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsMoen" [updateData]="onDataUpdate"></app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Kohler</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsKohler" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Peerless</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsPeerless" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">American Standard</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsAS" [updateData]="onDataUpdate"></app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Pfister</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsPfister" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Aqua Source</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsAquaS" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Brizo</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsBrizo" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Glacier Bay</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsGlacier" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Grohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInstalledtrendsGrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Hansgrohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsHansgrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Toto</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="whoInfluencedtrendsToto" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="isShownPurchasePrice">
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Delta</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsDelta" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Moen</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsMoen" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Kohler</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsKohler" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Peerless</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsPeerless" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">American Standard</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsAS" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Pfister</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsPfister" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Aqua Source</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsAquaS" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Brizo</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsBrizo" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Glacier Bay</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsGlacier" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Grohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsGrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Hansgrohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsHansgrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Toto</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getPurchasePricetrendsToto" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="isShownBrandChoice">
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Delta</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsDelta" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Moen</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsMoen" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Kohler</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsKohler" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Peerless</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsPeerless" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">American Standard</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsAS" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Pfister</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsPfister" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Aqua Source</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsAquaS" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Brizo</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsBrizo" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Glacier Bay</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsGlacier" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Grohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsGrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="tab1Trends" [class.active]="periodSeclected == 'tab1Trends'">
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Hansgrohe</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsHansgrohe" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 float-left">
+            <div class="card">
+              <div class="card-header green">Toto</div>
+              <div class="card-body border">
+                <app-chart-container [chart]="getReasonBrandChoicetrendsToto" [updateData]="onDataUpdate">
+                </app-chart-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+  <span class="note"><b>Low Base</b> shown if base size <75.</span>

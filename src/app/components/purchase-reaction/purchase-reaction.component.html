@@ -1,0 +1,289 @@
+<div class="col-md-12 float-left  mt-5 pt-4 pb-4">
+  <app-loader [show]="showLoader"></app-loader>
+
+  <div *ngIf="!showChart" id="chartView">
+    <app-filter-chip-list></app-filter-chip-list>
+    <div class="text-right float-right"> <i class="fa fa-caret-up text-success mr-1 fa-2x"></i>/
+      <i class="fa-2x fa fa-caret-down text-danger mr-2"></i><span class="font-sm">Significant @ 95% level</span>
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <h3 class="mt-2 mb-2 float-left col-7 pt-1" style="font-size: 24px;color:#29a84a">Purchase Reaction -
+      {{categoryHeading}} <i class="font-xs ml-2 text-dark">Base: Recent {{categoryHeading}} replacement / remodel</i>
+    </h3>
+    <app-chart-container *ngIf="brandcodes.length" [chart]="SatisfactionT3" [updateData]="onDataUpdate"
+      style="display: none"></app-chart-container>
+    <app-chart-container *ngIf="brandcodes.length" [chart]="PurchaseAgainT3" [updateData]="onDataUpdate"
+      style="display: none"></app-chart-container>
+    <app-chart-container *ngIf="brandcodes.length" [chart]="RecommandationT3" [updateData]="onDataUpdate"
+      style="display: none"></app-chart-container>
+    <app-chart-container *ngIf="brandcodes.length" [chart]="SocialMediaChart" [updateData]="onDataUpdate"
+      style="display: none"></app-chart-container>
+    <div class="float-right mt-1">
+      <!-- <span class="mr-4"><i class="fa fa-caret-up text-success mr-2 fa-2x"></i> <i
+                        class="fa-2x fa fa-caret-down text-danger mr-2"></i><span>Significant @ 95% level</span></span><i
+                    class="fa fa-line-chart font-sm border rounded p-2 clickable" hidden title="Switch to Trended View"></i> -->
+      <div class="float-right">
+        <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable" style="height:20px;"
+          (click)="ExcellExport()" />
+        <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable mr-2" style="height:20px;"
+          (click)="pptexport1('PurchaseReaction_PPT.zip')" />
+      </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="col-12 overflow">
+      <table class="table table-bordered brandHealth w-100 table-fixed">
+        <tr class="brandList">
+          <td></td>
+          <!-- <td *ngFor="let brand of brandList"><img src="{{brand}}" /></td> -->
+          <td *ngFor="let brands of brandlist "><img src={{brands}} /></td>
+        </tr>
+        <tr *ngFor="let Data of Satisfactiondata">
+          <td class="text-right pos-rel"><label>Satisfaction T3B</label>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Faucet'"><b>Satisfaction T3B</b>: RPF_FAU_RECENT_FAU4
+            </div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Showerhead'"><b>Satisfaction T3B</b>:
+              RPF_SHD_RECENT_SHD4</div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Toilet'"><b>Satisfaction T3B</b>: RPF_TOI_RECENT_TOI4
+            </div>
+          </td>
+          <td class="text-center" *ngFor="let score of Data.Score, let i = index;">
+            <div class="text-center LowBase" [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) != 'Low base'}">
+              Low Base</div>
+            <div class="col-4 float-left pos-rel text-center"
+              [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) == 'Low base'}">
+              <div class="bar-score">{{score | scoreAndBase :Data.base[i]}}</div>
+
+            </div>
+            <div class="col-6 float-left p-0 barBox base"
+              [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) == 'Low base'}">
+              <div class="bar-width" [style.width.%]="score"></div>
+              <div class="baseCount">Base: {{Data.base[i]}}</div>
+            </div>
+            <div *ngIf="Data.isSignificance[i] != undefined && (score | showSigTest :Data.compareScore[i]) !== 0" class="col-2 float-left p-0 sigbase">
+              <i class="fa fa-caret-down text-danger fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === (-1)"></i>
+              <i class="fa fa-caret-up text-success fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === 1"></i>
+              <div class="baseCount">Comparison Score: {{Data.compareScore[i] | scoreAndBase}}
+                <br><span>Comparison Base: {{Data.compareBase[i]}}</span>
+              </div>
+            </div>
+
+          </td>
+        </tr>
+        <tr *ngFor="let Data of Purchasedata">
+          <td class="text-right pos-rel"><label>Purchase Again T3B</label>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Faucet'"><b>Purchase Again</b>: RPF_FAU_RECENT_FAU5
+            </div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Showerhead'"><b>Purchase Again</b>: RPF_SHD_RECENT_SHD5
+            </div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Toilet'"><b>Purchase Again</b>: RPF_TOI_RECENT_TOI5
+            </div>
+          </td>
+          <td class="text-center" *ngFor="let score of Data.Score; let i = index;">
+            <div class="text-center LowBase" [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) != 'Low base'}">
+              Low Base</div>
+            <div class="col-4 float-left pos-rel text-center"
+              [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) == 'Low base'}">
+              <div class="bar-score">{{score | scoreAndBase :Data.base[i]}}</div>
+            </div>
+            <div class="col-6 float-left p-0 barBox base"
+              [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) == 'Low base'}">
+              <div class="bar-width" [style.width.%]="score"></div>
+              <div class="baseCount">Base: {{Data.base[i]}} </div>
+            </div>
+            <div *ngIf="Data.isSignificance[i] != undefined && (score | showSigTest :Data.compareScore[i]) !== 0" class="col-2 float-left p-0 sigbase">
+              <i class="fa fa-caret-down text-danger fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === (-1)"></i>
+              <i class="fa fa-caret-up text-success fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === 1"></i>
+              <div class="baseCount">Comparison Score: {{Data.compareScore[i] | scoreAndBase}}
+                <br><span>Comparison Base: {{Data.compareBase[i]}}</span>
+              </div>
+            </div>
+
+          </td>
+        </tr>
+        <tr *ngFor="let Data of Recommanddata">
+          <td class="text-right pos-rel"><label>Recommend T3B</label>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Faucet'"><b>Recommend</b>: RPF_FAU_RECENT_FAU6</div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Showerhead'"><b>Recommend</b>: RPF_SHD_RECENT_SHD6
+            </div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Toilet'"><b>Recommend</b>: RPF_TOI_RECENT_TOI6</div>
+          </td>
+          <td class="text-center" *ngFor="let score of Data.Score; let i = index;">
+            <div class="text-center LowBase" [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) != 'Low base'}">
+              Low Base</div>
+            <div class="col-4 float-left pos-rel text-center"
+              [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) == 'Low base'}">
+              <div class="bar-score">{{score | scoreAndBase :Data.base[i]}}</div>
+
+            </div>
+            <div class="col-6 float-left p-0 barBox base"
+              [ngClass]="{'hide' :(score | scoreAndBase :Data.base[i]) == 'Low base'}">
+              <div class="bar-width" [style.width.%]="score"></div>
+              <div class="baseCount">Base: {{Data.base[i]}} </div>
+            </div>
+            <div *ngIf="Data.isSignificance[i] != undefined && (score | showSigTest :Data.compareScore[i]) !== 0" class="col-2 float-left p-0 sigbase">
+              <i class="fa fa-caret-down text-danger fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === (-1)"></i>
+              <i class="fa fa-caret-up text-success fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === 1"></i>
+              <div class="baseCount">Comparison Score: {{Data.compareScore[i] | scoreAndBase}}
+                <br><span>Comparison Base: {{Data.compareBase[i]}}</span>
+              </div>
+            </div>
+
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-12 overflow">
+      <h4 style="font-size: 20px;color:#29a84a">Social Media</h4>
+      <table class="table table-bordered brandHealth w-100 table-fixed">
+        <tr class="brandList">
+          <td></td>
+          <td *ngFor="let brands of brandlist "><img src={{brands}} /></td>
+        </tr>
+        <tr *ngFor="let Data of socialMainDataArray">
+          <td class="text-right pos-rel"><label>{{Data.rowLabel}}</label>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Faucet'"><b>{{Data.rowLabel}}</b>: RPF_FAU_RECENT_FAU7
+            </div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Showerhead'"><b>{{Data.rowLabel}}</b>:
+              RPF_SHD_RECENT_SHD7</div>
+            <div class="titleOnHover" *ngIf="categoryHeading == 'Toilet'"><b>{{Data.rowLabel}}</b>: RPF_TOI_RECENT_TOI7
+            </div>
+          </td>
+          <td class="text-center" *ngFor="let score of Data.Score; let i = index;">
+            <div class="text-center LowBase" [ngClass]="{'hide' :(score | scoreAndBase :socialBase[i]) != 'Low base'}">
+              Low Base</div>
+            <div class="col-4 float-left pos-rel text-center"
+              [ngClass]="{'hide' :(score | scoreAndBase :socialBase[i]) == 'Low base'}">
+              <div class="bar-score">{{score | scoreAndBase :socialBase[i]}}</div>
+            </div>
+            <div class="col-6 float-left p-0 barBox base"
+              [ngClass]="{'hide' :(score | scoreAndBase :socialBase[i]) == 'Low base'}">
+              <div class="bar-width" [style.width.%]="score"></div>
+              <div class="baseCount">Base: {{socialBase[i]}} </div>
+            </div>
+            <div *ngIf="Data.isSignificance[i] != undefined && (score | showSigTest :Data.compareScore[i]) !== 0" class="col-2 float-left p-0 sigbase">
+              <i class="fa fa-caret-down text-danger fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === (-1)"></i>
+              <i class="fa fa-caret-up text-success fa-2x"
+                *ngIf="(score | showSigTest :Data.compareScore[i]) === 1"></i>
+              <div class="baseCount">Comparison Score: {{Data.compareScore[i] | scoreAndBase}}
+                <br><span>Comparison Base: {{Data.compareBase[i]}}</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div *ngIf="showTrends" id="trendView">
+    <div class="text-right float-right mb-1">
+      <img src="../../../assets/images/ppt.png" title="Download PPT" (click)="downloadPptTrends()" class="clickable"
+        style="height:20px;" />
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+      <div class="col-12">
+
+        <nav class="nav nav-pills border nav-justified">
+          <a class="nav-item nav-link active clickable border-right" [class.active]="periodSeclected == 'tab1'"
+            rel="tab1" (click)="changeTimePeriod('Quarterly','tab1')">
+            Quarterly
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab2'" rel="tab2"
+            (click)="changeTimePeriod('SemiAnnually','tab2')">
+            Semi Annually
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab3'" rel="tab3"
+            (click)="changeTimePeriod('Annually','tab3')">
+            Annually
+          </a>
+        </nav>
+
+      </div>
+    </div>
+    <div class="tab-content" id="myTabContent">
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">SATISFACTION T3B</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="satisfactionT3BTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">PURCHASE AGAIN T3B</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="purchaseAgainT3BTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">RECOMMEND T3B</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="recommandationT3BTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">SOCIAL MEDIA - POSITIVE POSTS</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="socialMediaPositiveTrends" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">SOCIAL MEDIA - NEGATIVE POSTS</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="socialMediaNegativeTrends" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">SOCIAL MEDIA - NEUTRAL POSTS</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="socialMediaNeutralTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">SOCIAL MEDIA - NO POSTS</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="socialMediaNoPostTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left"></div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+  <span class="note"><b>Low Base</b> shown if base size <75.</span>

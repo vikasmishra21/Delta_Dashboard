@@ -1,0 +1,14 @@
+label{font-size:1rem;font-weight:600;text-decoration: none;text-shadow: 0px;}
+.barBox{height:30px;background-color:#fafafa}
+.bar-width{width:0%;background-color:#868585;position: relative;height:30px;}
+.bar-score{position: absolute;left:8%;top:8px;color:#868585}
+.bar-score.LowBaseScore{position: absolute;left:5%;top:5px;color:#868585;font-size: .8rem;}
+td{min-width:150px;max-width:150px;vertical-align: middle;width:150px;}
+.table-fixed{table-layout: fixed;}
+.brandList td{text-align: center;}
+
+td{padding-top: .5rem;padding-bottom:.5rem}
+.base{position: relative;}
+
+/* .base:hover .baseCount{display: block;} */
+td:first-child:hover .titleOnHover{display: block}

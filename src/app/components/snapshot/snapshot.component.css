@@ -1,0 +1,48 @@
+
+.barBox{height:30px;background-color: #fafafa;}
+.bar-width{width:0%;background-color:#868585;position: relative;height:30px;}
+.bar-score{position: absolute;left:5%;top:8px;color:#868585;float: left;}
+td{height:40px;}
+.brandList img{height:30px;}
+.brandList td.selected {
+    border: 1px solid #29a84a;
+}
+.brandList td{padding:.5rem}
+.brandList td .fa {
+    display: none;
+}
+
+.brandList td.selected .fa {
+    display: block;
+    color: #fff;
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    z-index: 8;
+}
+.box{position: relative;padding: 5px;}
+.box::before, .box::after {
+    content: '';
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    border-color: transparent;
+    border-style: solid;
+    border-radius: 2px!important;
+}
+.box::after {
+    border-radius: 0.4em;
+    border-width: 1.35em;
+    border-right-color: #1d5f30;
+    border-top-color: #1d5f30;
+    display: none;
+}
+.brandList td.selected .box::after,.brandList td.selected .box::after{display: block;}
+.legend-box{width:15px;height:15px;border:1px solid #ffffff;margin-top: 4px;}
+.legend-box ~ span{font-size: .85rem!important}
+.considerationScore{position: absolute;top:40%; right:0px; left:0px;;z-index: 8;}
+
+.nav-link.active{
+    color: #fff;
+    background-color: #29a84a!important;border-radius:0px!important;
+}

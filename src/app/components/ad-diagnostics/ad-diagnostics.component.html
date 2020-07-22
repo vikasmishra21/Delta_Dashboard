@@ -1,0 +1,453 @@
+<div class="col-md-12 float-left  mt-5 pt-4 pb-4">
+  <app-loader [show]="showLoader"></app-loader>
+  <app-filter-chip-list></app-filter-chip-list>
+  <h3 *ngIf="selectedTab=='Diagnostics'" class="mt-2 mb-2 float-left col-5 pt-1 pos-rel"
+    style="font-size: 24px;color:#29a84a">Ad Diagnostics </h3>
+  <h3 *ngIf="selectedTab=='CallToAction'" class="mt-2 mb-2 float-left col-5 pt-1 pos-rel"
+    style="font-size: 24px;color:#29a84a">Ad Call to Action </h3>
+  <h3 *ngIf="selectedTab=='Recall'" class="mt-2 mb-2 float-left col-5 pt-1 pos-rel"
+    style="font-size: 24px;color:#29a84a">Ad Recall & Brand Attribution </h3>
+
+  <app-chart-container [chart]="adDiagnosticTotalAverageChart" [updateData]="onDataUpdate" style="display: none">
+  </app-chart-container>
+  <app-chart-container [chart]="adCallToActionTotalAverageChart" [updateData]="onDataUpdate" style="display: none">
+  </app-chart-container>
+  <app-chart-container [chart]="adCallToActionTakeSomeActionNetChart" [updateData]="onDataUpdate" style="display: none">
+  </app-chart-container>
+  <app-chart-container [chart]="adDiagnosticChartForAllBrands" [updateData]="onDataUpdate" style="display: none">
+  </app-chart-container>
+  <app-chart-container [chart]="adCallToActionChartAllBrands" [updateData]="onDataUpdate" style="display: none">
+  </app-chart-container>
+  <app-chart-container  *ngIf="ecrCallComp" [chart]="bubblechart3" [updateData]="onDataUpdateBubble"></app-chart-container>
+  <div class="float-right mt-1">
+    <span class="mr-4"><i class="fa fa-caret-up text-success mr-2 fa-2x"></i> <i
+        class="fa-2x fa fa-caret-down text-danger mr-2"></i><span>Significant @ 95% level</span></span><i
+      class="fa fa-line-chart font-sm border rounded p-2 clickable" hidden title="Switch to Trended View"></i>
+    <div class="float-right">
+      <img src="../../../assets/images/excel.png" title="Download Excel" (click)="downloadExcelFile();"
+        class="mr-2 clickable" style="height:20px;" />
+      <img src="../../../assets/images/ppt.png" title="Download PPT" *ngIf="selectedTab=='Diagnostics'" class="clickable" style="height:20px;"
+        (click)="pptexport('Ad_Perception_PPT.zip');" />
+        <img src="../../../assets/images/ppt.png" title="Download PPT" *ngIf="selectedTab=='CallToAction'" class="clickable" style="height:20px;"
+        (click)="pptexport('Ad_Call_To_Action_PPT.zip');" />
+    </div>
+    <div class="float-right font-sm mr-2" *ngIf="selectedTab=='Diagnostics' || selectedTab=='CallToAction'"
+      style="font-size: .9rem!important;">Note: Click on ad title for details</div>
+  </div>
+  <div class="clearfix"></div>
+  <div class="col-12 overflow">
+    <nav class="nav nav-pills border nav-justified">
+      <a class="nav-item nav-link clickable border-right" [class.active]="viewMode == 'tab1'" rel="tab1"
+        (click)="changeTable('Recall','tab1')">
+        Ad Recall & Brand Attribution
+      </a>
+      <a class="nav-item nav-link active clickable border-right" [class.active]="viewMode == 'tab2'" rel="tab2"
+        (click)="changeTable('Diagnostics','tab2')">
+        Ad Perceptions (% Top 2 Box)
+      </a>
+      <a class="nav-item nav-link clickable border-right" [class.active]="viewMode == 'tab3'" rel="tab3"
+        (click)="changeTable('CallToAction','tab3')">
+        Ad Call to Action
+      </a>
+
+    </nav>
+    <div class="tab-content" id="myTabContent">
+      <div id="tab1" class="hideTab active" [class.active]="viewMode == 'tab1'">
+        <div class="card">
+          <div class="green font-weight-normal mb-2 mt-2"><span  *ngIf="!showChart"> Note: Size of bubble indicates cume ECR to the time period selected.  ECR updated on a quarterly basis.</span>
+            <div class="text-right float-right">
+              <!-- <i class="p-1 ml-2 border rounded clickable" src="../../../assets/bubble-chart.png" title="Chart View" id="chartsTabs"
+                (click)="toggleChart('chartsTabs');"></i> -->
+                <img src="../../../assets/images/bubble-chart.png" title="Chart View" id="chartsTabs" class="clickable p-1 ml-2 border rounded" style="height:23px;"
+                (click)="toggleChart();" />
+              <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Table View" id="trendsTabs"
+                (click)="toggleTrends();"></i>
+            </div>
+            <div class="clearfix"></div></div>
+            <div *ngIf="!showChart">
+              <table class="table table-fixed legendtable text-center mb-2 ml-auto mr-auto" style="font-size: .85rem;width:50%">
+                <tr>
+                 
+                  <td class="border-top-0"> <span style="background-color: #C80000" class="legend-box mr-1"></span><span> Delta</span></td>
+                  <td class="border-top-0"> <span style="background-color: #FFD400" class="legend-box mr-1"></span><span>American Standard</span>
+                  </td>
+                  <td class="border-top-0"> <span style="background-color: #000" class="legend-box mr-1 border"></span><span>Kohler</span></td>
+                  <td class="border-top-0"> <span style="background-color: #00B7F9" class="legend-box mr-1"></span><span>Moen</span>
+                  </td>
+                 
+                </tr>
+              </table>
+              <app-chart-container *ngIf="ecrCallComp" [chart]="adrecalAndBrandingArray" [updateData]="onDataUpdateBubble"></app-chart-container>
+          <!-- <app-chart-container [chart]="adRecallDataChart" [updateData]="onDataUpdate"></app-chart-container> -->
+            </div>
+            <div *ngIf="showTrends" class="col-10 ml-auto mr-auto">
+              <table class="table table-bordered">
+                <thead>
+                  <tr class="text-center"  style="background-color: #fafafa;">
+                    <td></td>
+                    <td></td>
+                    <td><label>Ad Recall %</label></td>
+                    <td><label><br>Branding % <br> <p style="font-size: small;">(Couldn’t help but remember brand)</p></label></td>
+                    <td><label>Cumulative ECRs</label></td>
+                  </tr>
+                </thead>
+                <tbody *ngIf= "adRecallBrandingGridData.size == 4">
+                  <tr *ngFor= "let row of adRecallBrandingGridData.get('Delta'); let i = index">
+                    <td *ngIf="i == 0" [attr.rowspan]="i==0?adRecallBrandingGridData.get('Delta').length:''" class="brandList text-center"><img src="{{brandList[0]}}"/></td>
+                    <td class="text-right"><a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.Adname}}</a></td>
+                    <td class="text-right">{{row.Recallscore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.Brandingcore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.CummulativeECR}}</td>
+                  </tr>
+                  <tr *ngFor= "let row of adRecallBrandingGridData.get('Moen'); let i = index">
+                    <td *ngIf="i == 0" [attr.rowspan]="i==0?adRecallBrandingGridData.get('Moen').length:''" class="brandList text-center"><img src="{{brandList[1]}}"/></td>
+                    <td class="text-right"><a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.Adname}}</a></td>
+                    <td class="text-right">{{row.Recallscore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.Brandingcore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.CummulativeECR}}</td>
+                  </tr>
+                  <tr *ngFor= "let row of adRecallBrandingGridData.get('Kohler'); let i = index">
+                    <td *ngIf="i == 0" [attr.rowspan]="i==0?adRecallBrandingGridData.get('Kohler').length:''" class="brandList text-center"><img src="{{brandList[2]}}"/></td>
+                    <td class="text-right"><a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.Adname}}</a></td>
+                    <td class="text-right">{{row.Recallscore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.Brandingcore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.CummulativeECR}}</td>
+                  </tr>
+                  <tr *ngFor= "let row of adRecallBrandingGridData.get('American_Standard'); let i = index">
+                    <td *ngIf="i == 0" [attr.rowspan]="i==0?adRecallBrandingGridData.get('American_Standard').length:''" class="brandList text-center"><img src="{{brandList[3]}}"/></td>
+                    <td class="text-right"><a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.Adname}}</a></td>
+                    <td class="text-right">{{row.Recallscore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.Brandingcore | scoreAndBase}}</td>
+                    <td class="text-right">{{row.CummulativeECR}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+        </div>
+      </div>
+      <div id="tab2" class="hideTab" [class.active]="viewMode == 'tab2'">
+        <div class="card-body pt-2 mb-3 pl-0 mt-3">
+          <div style="font-size: .85rem;">
+            <div class="col-2 float-left pr-0 font-weight-bold pl-0">Index vs. Average (All Ads)</div>
+            <div class="col-2 float-left pr-0">
+              <div style="background-color: #92D050" class="legend-box float-left mr-2"></div><span>
+                Overindex: 120 or higher</span>
+            </div>
+            <div class="col-2 float-left">
+              <div style="background-color: #E5F995" class="legend-box float-left mr-2"></div>
+              <span>Overindex: 110 - 119</span>
+            </div>
+            <div class="col-2 float-left">
+              <div style="background-color: #fff" class="legend-box float-left mr-2 border"></div>
+              <span>Average: 91 - 109</span>
+            </div>
+            <div class="col-2 float-left">
+              <div style="background-color: #FFCCCE" class="legend-box float-left mr-2"></div>
+              <span>Underindex: 81 - 90</span>
+            </div>
+            <div class="col-2 float-left pr-0">
+              <div style="background-color: #FF656D" class="legend-box float-left mr-2"></div>
+              <span>Underindex: 80 or lower</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="float-right" style="font-size: 12px!important;">* represents Inverted Indexing logic</div>
+        <div class="clearfix"></div>
+        <table class="table table-bordered w-100 mt-2">
+          <tr style="background-color: #fafafa;">
+            <td colspan="2" class="text-center"></td>
+            <td colspan="3" class="text-center"><label>Engaging</label></td>
+            <td colspan="2" class="text-center"><label>Persuasive</label></td>
+            <td colspan="4" class="text-center"><label>Informative</label></td>
+            <td colspan="2" class="text-center"><label>Unique</label></td>
+          </tr>
+          <tr class="text-center">
+            <td colspan="2" class=""></td>
+            <td>Enjoyment</td>
+            <td>See Again</td>
+            <td>Tired of Seeing*</td>
+            <td>More likely to buy</td>
+            <td>More Appealing</td>
+            <td>Important Info</td>
+            <td>New News</td>
+            <td>Believable</td>
+            <td>Easy to understand</td>
+            <td>Original</td>
+            <td>Different</td>
+          </tr>
+          <tr class="text-center">
+            <td colspan="2" class="text-center"><label>Average (All Ads)</label></td>
+            <td *ngFor="let avg of adDiagnosticTotalAverage">{{avg | scoreAndBase}}</td>
+          </tr>
+          <tr class="text-center">
+            <td colspan="2" class="text-center"><label>Average (Selected Ads)</label></td>
+            <td *ngFor="let avg of adDiagnosticAverageArray">{{avg | scoreAndBase}}</td>
+          </tr>
+          <tr *ngFor="let row of adDiagnosticTableDelta, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0?adDiagnosticTableDelta.length:''" class="brandList"><img
+                src="{{brandList[0]}}"></td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData; let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] != undefined && row.isSignificance[j] !== 0 && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x" *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x" *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let row of adDiagnosticTableMoen, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0?adDiagnosticTableMoen.length:''" class="brandList"><img
+                src="{{brandList[1]}}"></td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData; let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] != undefined && row.isSignificance[j] !== 0 && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x" *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x" *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let row of adDiagnosticTableKohler, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0?adDiagnosticTableKohler.length:''" class="brandList"><img
+                src="{{brandList[2]}}"></td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData;let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] != undefined && row.isSignificance[j] !== 0 && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let row of adDiagnosticTableAmerican, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0?adDiagnosticTableAmerican.length:''" class="brandList"><img
+                src="{{brandList[3]}}"></td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData;let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] != undefined && row.isSignificance[j] !== 0 && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div id="tab3" class="hideTab" [class.active]="viewMode == 'tab3'">
+        <div class="card-body pt-2 mb-3 pl-0 mt-3">
+          <div style="font-size: .85rem;">
+            <div class="col-2 float-left pr-0 font-weight-bold pl-0">Index vs. Average (All Ads)</div>
+            <div class="col-2 float-left pr-0">
+              <div style="background-color: #92D050" class="legend-box float-left mr-2"></div><span>
+                Overindex: 120 or higher</span>
+            </div>
+            <div class="col-2 float-left">
+              <div style="background-color: #E5F995" class="legend-box float-left mr-2"></div>
+              <span>Overindex: 110 - 119</span>
+            </div>
+            <div class="col-2 float-left">
+              <div style="background-color: #fff" class="legend-box float-left mr-2 border"></div>
+              <span>Average: 91 - 109</span>
+            </div>
+            <div class="col-2 float-left">
+              <div style="background-color: #FFCCCE" class="legend-box float-left mr-2"></div>
+              <span>Underindex: 81 - 90</span>
+            </div>
+            <div class="col-2 float-left pr-0">
+              <div style="background-color: #FF656D" class="legend-box float-left mr-2"></div>
+              <span>Underindex: 80 or lower</span>
+            </div>
+          </div>
+        </div>
+        <table class="table table-bordered w-100 mt-2">
+          <tr style="background-color: #fafafa;">
+            <td colspan="2" class="text-center"></td>
+            <td colspan="" class="text-center"></td>
+            <td colspan="5" class="text-center"><label>Get More Info</label></td>
+            <td colspan="4" class="text-center"><label>Share Info</label></td>
+          </tr>
+          <tr class="text-center">
+            <td colspan="2" class="text-center"></td>
+            <td>Take Some Action (net)</td>
+            <td>Look in-store</td>
+            <td>Visit Brand Website</td>
+            <td>Search Online</td>
+            <td>Click Ad</td>
+            <td>More Info</td>
+            <td>Talk with Friends/Family</td>
+            <td>Recommended to Friends/Family</td>
+            <td>Talk on Social Media</td>
+            <td>Write Blog Entry</td>
+          </tr>
+          <tr class="text-center">
+            <td colspan="2" class="text-center"><label>Average (All Ads)</label></td>
+            <!-- <td>{{totalaverageOfRow}}</td> -->
+            <td *ngFor="let avg of adCallToActionTotalAverage">{{avg | scoreAndBase}}</td>
+          </tr>
+          <tr class="text-center">
+            <td colspan="2" class="text-center"><label>Average (Selected Ads)</label></td>
+            <!-- <td>{{netActionAverage}}</td> -->
+            <td *ngFor="let avg of adCallActionColAverageArray">{{avg | scoreAndBase}}</td>
+          </tr>
+          <tr *ngFor="let row of adCallToActionTableDelta, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0 ? adCallToActionTableDelta.length : ''" class="brandList"><img
+                src="{{brandList[0]}}"></td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <!-- <td class="text-center">{{adCallActionRowAverageArray[0+i] === 'NaN' ? 'NA' : adCallActionRowAverageArray[0+i]}}</td> -->
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData; let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] !== undefined && (row.isSignificance[j] !== 0) && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let row of adCallToActionTableMoen, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0?adCallToActionTableMoen.length:''" class="brandList"><img
+                src="{{brandList[1]}}"></td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <!-- <td class="text-center">{{adCallActionRowAverageArray[adCallToActionTableDelta.length + i] === 'NaN' ? 'NA' : adCallActionRowAverageArray[adCallToActionTableDelta.length + i]}}</td> -->
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData; let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] != undefined && (row.isSignificance[j] !== 0) && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let row of adCallToActionTableKohler, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0?adCallToActionTableKohler.length:''" class="brandList"><img
+                src="{{brandList[2]}}">
+              </td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <!-- <td class="text-center">
+              {{adCallActionRowAverageArray[adCallToActionTableDelta.length + adCallToActionTableMoen.length +i] === 'NaN' ? 'NA' : adCallActionRowAverageArray[adCallToActionTableDelta.length + adCallToActionTableMoen.length +i]}}
+            </td> -->
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData;let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] != undefined && (row.isSignificance[j] !== 0) && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let row of adCallToActionTableAmerican, let i = index;">
+            <td *ngIf="i == 0" [attr.rowspan]="i==0?adCallToActionTableAmerican.length:''" class="brandList"><img
+                src="{{brandList[3]}}"></td>
+            <td class="text-right">
+              <a class="clickable link" routerLink="/home/AdDetails/{{row.url}}">{{row.serieseName}}</a>
+            </td>
+            <!-- <td class="text-center">
+              {{adCallActionRowAverageArray[adCallToActionTableDelta.length + adCallToActionTableMoen.length+ adCallToActionTableKohler.length +i] === 'NaN' ? 'NA' : adCallActionRowAverageArray[adCallToActionTableDelta.length + adCallToActionTableMoen.length+ adCallToActionTableKohler.length +i]}}
+            </td> -->
+            <td class="text-center base table-index" *ngFor="let col of row.serieseData;let j = index;"
+              [style.backgroundColor]="row.serieseColor[j]"
+              [ngClass]="{'text-white' :row.serieseColor[j] !== '#fff' && row.serieseColor[j] !== '#FFCCCE' && row.serieseColor[j] !== '#E5F995','LowBaseBg': (col | scoreAndBase : row.seriesBase) == 'Low base' }">
+              {{col | scoreAndBase : row.seriesBase}}
+              <span *ngIf="row.isSignificance[j] != undefined && (row.isSignificance[j] !== 0) && (col | showSigTest :row.compareScore[j]) !== 0">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(col | showSigTest :row.compareScore[j]) === 1"></i>
+              </span>
+              <div class="baseCount">Base: {{row.seriesBase}}<br>
+                <span *ngIf="row.isSignificance[j] != undefined && (col | showSigTest :row.compareScore[j]) !== 0">
+                  Comparison Score: {{row.compareScore[j] | scoreAndBase}}<br>
+                  <span>Comparison Base: {{row.compareBase}}</span>
+                </span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="col-12 p-0">
+                    Trended View
+                </div> -->
+  <div class="clearfix"></div>
+  <span class="note"><b>Low Base</b> shown if base size <75. </span>
+
+</div>

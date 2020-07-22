@@ -1,0 +1,540 @@
+<div class="col-md-12 float-left  mt-5 pt-4 pb-4">
+  <app-loader [show]="showLoader"></app-loader>
+  <div *ngIf="!showChart" id="chartView">
+    <div class="col-11 float-left"><app-filter-chip-list></app-filter-chip-list></div>
+    <div class="col-1 float-left pr-0"><div class="p-1 rounded border text-center font-sm bg-dark text-white clickable" routerLink="/home/AdDiagnostics">Go Back</div></div>
+    <div class="clearfix"></div>
+    <app-chart-container [chart]="dataShowAdRecall" [updateData]="onDataUpdate" hidden></app-chart-container>
+    <div class="text-right float-right"> <i class="fa fa-caret-up text-success mr-1 fa-2x"></i>/
+      <i class="fa-2x fa fa-caret-down text-danger mr-2"></i><span class="font-sm">Significant @ 95% level</span>
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <h3 class="mt-2 mb-2 float-left col-7 pt-1 pos-rel" style="font-size: 24px;color:#29a84a">Ad Details (%)
+      <i class="font-xs ml-2 text-dark">Base: Total to metrics</i>
+    </h3>
+
+    <div class="clearfix"></div>
+    <div class="col-12 overflow">
+      <div class="col-12">
+        <div class="col-3 float-left pl-0">
+          <div class="card mb-0" style="height:45vh;">
+            <div class="card-header"></div>
+            <div class="card-body p-0">
+              <table class="w-100" *ngFor="let addlist of selectedAds">
+                <tr>
+                  <td class="card-header green font-weight-bold pt-0 pos-rel" style="font-size: 16px;">
+                    {{addlist.adname}}</td>
+                </tr>
+                <tr>
+                  <td class="text-left">
+                    <video class="video-fluid z-depth-1" loop controls muted
+                      style="max-width: 100%;max-height:250px!important">
+                      <source src={{addlist.videopath}} type="video/mp4" />
+                    </video>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header green font-weight-bold pt-0 pos-rel mt-4">Ad Details</div>
+            <div class="card-body p-0">
+              <table class="table table-bordered w-100" *ngFor="let addlist of selectedAds">
+                <tr>
+                  <td>Ad Name</td>
+                  <td>{{addlist.adname}}</td>
+                </tr>
+                <tr>
+                  <td>Ad Type</td>
+                  <td>{{addlist.adtype}}</td>
+                </tr>
+                <tr>
+                  <td>Brand</td>
+                  <td>{{addlist.brand}}</td>
+                </tr>
+                <tr>
+                  <td>Product Category</td>
+                  <td>{{addlist.product_category}}</td>
+                </tr>
+                <tr>
+                  <td>Ad Length</td>
+                  <td>{{addlist.adlength}}</td>
+                </tr>
+                <tr>
+                  <td>Numerator Ad Code</td>
+                  <td>{{addlist.numerator_ad_code}}</td>
+                </tr>
+                <tr>
+                  <td>First Run Date</td>
+                  <td>{{firstrundate}}</td>
+                </tr>
+                <tr>
+                  <td>Last Run Date</td>
+                  <td>{{lastrundate}}</td>
+                </tr>
+                <tr>
+                  <td>Quarter Start Date</td>
+                  <td>{{addlist.quarterstartdate}}</td>
+                </tr>
+                <tr>
+                  <td>Quarter End Date</td>
+                  <td>{{addlist.quarterenddate}}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-9 float-left">
+          <div class="col-3 float-left" style="height:45vh;">
+            <div class="card">
+              <div class="card-header green font-weight-bold pt-0 pos-rel">Ad Recall
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable"
+                    style="height:20px;" (click)=downloadExcelFileAdRecall() />
+                  <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                    style="height:20px;" (click)=pptAdRecall() />
+                </div>
+              </div>
+              <div class="card-body p-0" style="height:170px;">
+                <div>
+                  <div class="chart base" *ngIf="adRecallDataPresent">
+                    <div class="gauge-a"></div>
+                    <div class="gauge-b"></div>
+                    <div class="gauge-d"></div>
+                    <div class="gauge-c" [ngStyle]="{'transform': 'rotate('+ adRecallValueCircle +'turn)'}"></div>
+                    <div class="gauge-data">
+                      <h1 id="percent" class="mt-5">{{adRecallValue}}</h1>
+                    </div>
+                    <div class="baseCount" style="font-size: 24px;">Base: {{adRecallBase}}</div>
+                  </div>
+                  <br> <br>
+                  <div class="alert alert-info font-sm" style="width: 80%;" *ngIf="!adRecallDataPresent">
+                    No Data Present.
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-9 float-left" style="height:45vh;">
+            <div class="card col-6 float-left">
+              <div class="card-header green font-weight-bold pt-0 pos-rel">Brand Linkage
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable"
+                    style="height:20px;" (click)=downloadExcelFileBrandLinkage() />
+                  <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                    style="height:20px;" (click)=pptBRANDLINKAGEexport() />
+                </div>
+              </div>
+              <div class="card-body pb-0">
+                <div class="p-0" *ngIf="dataShowBrandRecallData">
+                  <app-chart-container [chart]="dataShowBrandRecall" [updateData]="onDataUpdate">
+                  </app-chart-container>
+                  <div style="width:100px;height:140px;background-color: #fff;margin: 0 auto;margin-bottom:5px;"
+                    *ngIf="firstOpt!=null&&secondOpt!=null&&thirdOpt!=null&&fourthOpt!=null&&fifthOpt!=null" class="base">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(firstOpt | scoreAndBase : dataShowBrandRecallBases[0]) != 'Low base'}">Low
+                      Base</div>
+                    <div style="width:100%;height:30%;background-color: #4d4d4d" [style.height.%]="firstOpt"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(firstOpt  | scoreAndBase : dataShowBrandRecallBases[0]) == 'Low base'}">
+                      <div class="considerationScore"
+                        [ngStyle]="{'top':firstOpt > 5 ? '40%' : '-20px' ,'color':firstOpt > 5 ? 'white' : 'black'}"
+                        *ngIf="firstOpt!=null">
+                        {{firstOpt | scoreAndBase : dataShowBrandRecallBases[0]}}</div>
+                    </div>
+
+                    <div style="width:100%;height:20%;background-color: #777676" [style.height.%]="secondOpt"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(secondOpt  | scoreAndBase : dataShowBrandRecallBases[0]) == 'Low base'}">
+                      <div class="considerationScore" *ngIf="secondOpt!=null">
+                        {{secondOpt  | scoreAndBase : dataShowBrandRecallBases[0]}}</div>
+                    </div>
+
+                    <div style="width:100%;height:40%;background-color: #969595" [style.height.%]="thirdOpt"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(thirdOpt  | scoreAndBase : dataShowBrandRecallBases[0]) == 'Low base'}">
+                      <div class="considerationScore" *ngIf="thirdOpt!=null">
+                        {{thirdOpt  | scoreAndBase : dataShowBrandRecallBases[0]}}</div>
+                    </div>
+
+                    <div style="width:100%;height:40%;background-color: #B8B8B8" [style.height.%]="fourthOpt"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(fourthOpt  | scoreAndBase : dataShowBrandRecallBases[0]) == 'Low base'}">
+
+                      <div class="considerationScore" *ngIf="fourthOpt!=null" [ngStyle]="{'color':fourthOpt1 > 10 ? '#fff' : '#858686'}">
+                        {{fourthOpt  | scoreAndBase : dataShowBrandRecallBases[0]}}</div>
+
+                    </div>
+
+                    <div style="width:100%;height:10%;background-color: #CDCDCD" [style.height.%]="fifthOpt"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(fifthOpt  | scoreAndBase : dataShowBrandRecallBases[0]) == 'Low base'}">
+
+                      <div class="considerationScore"
+                        [ngStyle]="{'top':fifthOpt > 10 ? '40%' : '110%', 'color':fifthOpt > 10 ? '#fff' : '#858686'}"
+                        *ngIf="fifthOpt!=null">
+                        {{fifthOpt  | scoreAndBase : dataShowBrandRecallBases[0]}}</div>
+
+                    </div>
+
+                    <div class="text-center baseCount">Base: {{dataShowBrandRecallBases[0]}}</div>
+
+                  </div>
+
+                  <!-- <div class="alert alert-info font-sm"
+                                    *ngIf="firstOpt==null||secondOpt==null||thirdOpt==null||fourthOpt==null||fifthOpt==null">
+                                    No Data Available</div> -->
+
+                </div>
+
+                <div class="alert alert-info font-sm" style="width: 51%;" *ngIf="!dataShowBrandRecallData">
+                  No Data Present.
+              </div>
+
+                <div class="clearfix"></div>
+
+              </div>
+
+            </div>
+            <div class="card col-6 float-left p-0">
+
+              <div class="card-header green font-weight-bold pt-0 pos-rel">Brand Linkage (Ad Recalled)
+
+                <div class="float-right">
+
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable"
+                    style="height:20px;" (click)=downloadExcelFileBrandLinkageAdRecall() />
+
+                  <img src="../../../assets/images/ppt.png" title="Download PPT"
+                    class="clickable" style="height:20px;" (click)=pptBRANDLINKAGEADRECALLEDexport() />
+
+                </div>
+
+              </div>
+
+              <div class="card-body pb-0">
+
+                <div class="p-0" *ngIf="dataShowBrandRecallData1">
+                  <app-chart-container [chart]="dataShowBrandRecallLink" [updateData]="onDataUpdate"
+                    style="display:none"></app-chart-container>
+                  <div style="width:100px;height:140px;background-color: #fff;margin: 0 auto;margin-bottom:5px;"
+                    class="base" *ngIf="dataShowBrandRecallBases1">
+                    <div class="text-center LowBase"
+                      [ngClass]="{'hide' :(firstOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]) != 'Low base'}">Low
+                      Base</div>
+                    <div style="width:100%;height:30%;background-color: #4d4d4d" [style.height.%]="firstOpt1"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(firstOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]) == 'Low base'}">
+                      <div class="considerationScore"
+                        [ngStyle]="{'top':firstOpt1 > 5 ? '40%' : '-20px' ,'color':firstOpt1 > 5 ? 'white' : 'black'}"
+                        *ngIf="firstOpt1!=null">
+                        {{firstOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]}}</div>
+                    </div>
+                    <div style="width:100%;height:20%;background-color: #777676" [style.height.%]="secondOpt1"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(secondOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]) == 'Low base'}">
+                      <div class="considerationScore" *ngIf="secondOpt1!=null">
+                        {{secondOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]}}</div>
+                    </div>
+                    <div style="width:100%;height:40%;background-color: #969595" [style.height.%]="thirdOpt1"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(thirdOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]) == 'Low base'}">
+                      <div class="considerationScore" *ngIf="thirdOpt1!=null">
+                        {{thirdOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]}}</div>
+                    </div>
+                    <div style="width:100%;height:40%;background-color: #B8B8B8" [style.height.%]="fourthOpt1"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(fourthOpt1  | scoreAndBase : dataShowBrandRecallBases[0]) == 'Low base'}">
+                      <div class="considerationScore" *ngIf="fourthOpt1!=null" [ngStyle]="{'color':fourthOpt1 > 10 ? '#fff' : '#858686'}">
+                        {{fourthOpt1  | scoreAndBase : dataShowBrandRecallBases[0]}}</div>
+                    </div>
+                    <div style="width:100%;height:10%;background-color: #CDCDCD" [style.height.%]="fifthOpt1"
+                      class="text-white text-center pos-rel"
+                      [ngClass]="{'hide' :(fifthOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]) == 'Low base'}">
+                      <div class="considerationScore"
+                        [ngStyle]="{'top':fifthOpt1 > 10 ? '40%' : '110%', 'color':fifthOpt1 > 10 ? '#fff' : '#858686'}"
+                        *ngIf="fifthOpt1!=null">
+                        {{fifthOpt1 | scoreAndBase : dataShowBrandRecallBases1[0]}}</div>
+                    </div>
+                    <div class="text-center baseCount">Base: {{dataShowBrandRecallBases1[0]}}</div>
+                  </div>
+                  <br>
+                  <!-- <div class="font-sm text-center"
+                    *ngIf="firstOpt1==null||secondOpt1==null||thirdOpt1==null||fifthOpt1==null">NA</div> -->
+                </div>
+
+                <div class="alert alert-info font-sm" style="width: 51%;" *ngIf="dataShowBrandRecallData1.length === 0">
+                  No Data Present.
+              </div>
+
+                <div class="clearfix"></div>
+
+              </div>
+
+            </div>
+            <div class="clearfix"></div>
+            <div style="font-size: 11px;"  *ngIf="dataShowBrandRecallData">
+              <div class="col-5 float-left p-0">
+                <div style="background-color: #4d4d4d" class="legend-box  float-left mr-2 "></div>
+                <span>You could not help but remember it is for</span>
+              </div>
+              <div class="col-7 float-left p-0">
+                <div style="background-color: #777676" class="legend-box float-left mr-2"></div>
+                <span>It is pretty good at making you remember it is for</span>
+              </div>
+              <div class="col-5 float-left p-0">
+                <div style="background-color: #969595" class="legend-box float-left mr-2"></div>
+                <span>It is just okay at making you remember it is for</span>
+              </div>
+              <div class="col-7 float-left p-0">
+                <div style="background-color: #B8B8B8" class="legend-box float-left mr-2"></div>
+                <span>It could be for any brand of kitchen or bath plumbing products</span>
+              </div>
+              <div class="col-5 float-left p-0">
+                <div style="background-color: #CDCDCD" class="legend-box float-left mr-2"></div>
+                <span>It could be for almost anything</span>
+              </div>
+              <div class="clearfix"></div>
+            </div>
+          </div>
+
+
+
+          <div class="col-6 float-left">
+            <div class="card ">
+              <div class="card-header green font-weight-bold pt-0 pos-rel mt-4">Ad Perceptions (% Top 2 Box)
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable"
+                    style="height:20px;" (click)=downloadExcelFileAdDiagnostic() />
+
+                  <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                    style="height:20px;" (click)=pptexportAddiagnostic() />
+                </div>
+                <app-chart-container *ngIf="dataShowAdDiagShow" [chart]="dataShowAddiagnostics" [updateData]="onDataUpdate"></app-chart-container>
+              </div>
+
+              <div class="card-body p-0" *ngIf="dataShowAdDiagShow">
+
+                <table class="w-100 table table-bordered">
+                  <tr *ngFor="let recentDetails of dataShowAddiagnosticsData; let i = index">
+                    <td class="text-right">
+                      {{recentDetails.question}}
+                    </td>
+                    <td class="pos-rel base" style="width:40%;">
+                      <div class="text-center LowBase"
+                        [ngClass]="{'hide' :(recentDetails.Score | scoreAndBase : dataShowAddiagnosticsBases) != 'Low base'}">
+                        Low Base</div>
+                      <div class="pos-rel col-3 float-left"
+                        [ngClass]="{'hide' :(recentDetails.Score | scoreAndBase : dataShowAddiagnosticsBases) == 'Low base'}">
+                        <div class="bar-score">
+                          {{recentDetails.Score | scoreAndBase : dataShowAddiagnosticsBases}}
+                        </div>
+                      </div>
+                      <div class="barBox pos-rel col-7 float-left p-0"
+                        [ngClass]="{'hide' :(recentDetails.Score | scoreAndBase : dataShowAddiagnosticsBases) == 'Low base'}">
+                        <div class="bar-width" [style.width.%]="recentDetails.Score"></div>
+                      </div>
+
+                      <div class="pos-rel col-2 float-left p-0 text-center"  *ngIf="recentDetails.isSignificance != undefined && recentDetails.isSignificance !== 0 && 
+                      (recentDetails.Score | showSigTest :recentDetails.compareScore) !== 0">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                          *ngIf="(recentDetails.Score | showSigTest :recentDetails.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                          *ngIf="(recentDetails.Score | showSigTest :recentDetails.compareScore) === 1"></i>
+                      </div>
+                      <div class="baseCount">Base: {{dataShowAddiagnosticsBases}}<br>
+                        <span *ngIf="recentDetails.isSignificance != undefined && recentDetails.isSignificance !== 0 && (recentDetails.Score | showSigTest :recentDetails.compareScore) !== 0">
+                          Comparison Score: {{recentDetails.compareScore | scoreAndBase}}<br>
+                          <span>Comparison Base: {{recentDetails.compareBase}}</span>
+                        </span>
+                      </div>
+
+                      <!-- <span *ngIf="recentDetails.isSignificance != undefined && recentDetails.isSignificance !== 0">
+                        <i class="fa fa-caret-down text-danger fa-2x"
+                          *ngIf="!(recentDetails.Score>recentDetails.compareScore)"></i>
+                        <i class="fa fa-caret-up text-success fa-2x"
+                          *ngIf="(recentDetails.Score>recentDetails.compareScore)"></i>
+                      </span> -->
+                      <!-- <div class="baseCount">Base: {{dataShowAddiagnosticsBases}}<br>
+                        <span *ngIf="recentDetails.isSignificance !== undefined">
+                          Comparison Score: {{recentDetails.compareScore | scoreAndBase}}<br>
+                          <span>Comparison Base: {{recentDetails.compareBase}}</span>
+                        </span>
+                      </div> -->
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <div class="alert alert-info font-sm" style="width: 51%;" *ngIf="!dataShowAdDiagShow">
+                No Data Present.
+            </div>
+            </div>
+          </div>
+
+          <div class="col-6 float-right">
+            <div class="card">
+              <div class="card-header green font-weight-bold pt-0 pos-rel mt-4">Ad Call to Action
+                <div class="float-right">
+                  <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable"
+                    style="height:20px;" (click)=downloadExcelFileCallToAction() />
+
+                  <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable"
+                    (click)=pptexportAddcalltoaction() style="height:20px;" />
+                </div>
+                <app-chart-container [chart]="dataShowCallToAction" [updateData]="onDataUpdate"></app-chart-container>
+              </div>
+              <div class="card-body p-0" *ngIf="dataShowAdCalltoActionShow">
+                <table class="w-100 table table-bordered">
+                  <tr *ngFor="let recentDetails of dataShowCallToActionData; let i = index">
+                    <td class="text-right">
+                      {{recentDetails.question}}
+                    </td>
+
+                    <td class="pos-rel base" style="width:40%;">
+                      <div class="text-center LowBase"
+                        [ngClass]="{'hide' :(recentDetails.Score | scoreAndBase : dataShowCallToActionBases) != 'Low base'}">
+                        Low Base</div>
+                      <div class="pos-rel col-3 float-left"
+                        [ngClass]="{'hide' :(recentDetails.Score | scoreAndBase : dataShowCallToActionBases) == 'Low base'}">
+                        <div class="bar-score">
+                          {{recentDetails.Score | scoreAndBase : dataShowCallToActionBases}}</div>
+                      </div>
+
+                      <div class="barBox pos-rel col-7 float-left p-0"
+                        [ngClass]="{'hide' :(recentDetails.Score | scoreAndBase : dataShowCallToActionBases) == 'Low base'}">
+                        <div class="bar-width p-0" [style.width.%]="recentDetails.Score"></div>
+                      </div>
+                      <div class="pos-rel col-2 float-left p-0 text-center" *ngIf="recentDetails.isSignificance != undefined && recentDetails.isSignificance !== 0 &&
+                      (recentDetails.Score | showSigTest :recentDetails.compareScore) !== 0">
+                          <i class="fa fa-caret-down text-danger fa-2x"
+                          *ngIf="(recentDetails.Score | showSigTest :recentDetails.compareScore) === (-1)"></i>
+                          <i class="fa fa-caret-up text-success fa-2x"
+                          *ngIf="(recentDetails.Score | showSigTest :recentDetails.compareScore) === 1"></i>
+                      </div>
+                      <div class="baseCount">Base: {{dataShowCallToActionBases}}<br>
+                        <span *ngIf="recentDetails.isSignificance != undefined && recentDetails.isSignificance !== 0 && (recentDetails.Score | showSigTest :recentDetails.compareScore) !== 0">
+                          Comparison Score: {{recentDetails.compareScore | scoreAndBase}}<br>
+                          <span>Comparison Base: {{recentDetails.compareBase}}</span>
+                        </span>
+                      </div>
+
+                      <!-- <span *ngIf="recentDetails.isSignificance != undefined && recentDetails.isSignificance !== 0">
+                        <i class="fa fa-caret-down text-danger fa-2x"
+                          *ngIf="!(recentDetails.Score>recentDetails.compareScore)"></i>
+                        <i class="fa fa-caret-up text-success fa-2x"
+                          *ngIf="(recentDetails.Score>recentDetails.compareScore)"></i>
+                      </span>
+                      <div class="baseCount">Base: {{dataShowCallToActionBases}}<br>
+                        <span *ngIf="recentDetails.isSignificance !== undefined">
+                          Comparison Score: {{recentDetails.compareScore | scoreAndBase}}<br>
+                          <span>Comparison Base: {{recentDetails.compareBase}}</span>
+                        </span>
+                      </div> -->
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <div class="alert alert-info font-sm" style="width: 51%;" *ngIf="!dataShowAdCalltoActionShow">
+                No Data Present.
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showTrends" id="trendView">
+    <div class="text-right float-right mb-1">
+      <img src="../../../assets/images/ppt.png" title="Download PPT" (click)="downloadPptTrends()" class="clickable"
+        style="height:20px;" />
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+      <div class="col-12">
+
+        <nav class="nav nav-pills border nav-justified">
+          <a class="nav-item nav-link active clickable border-right" [class.active]="periodSeclected == 'tab1'"
+            rel="tab1" (click)="changeTimePeriod('Quarterly','tab1')">
+            Quarterly
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab2'" rel="tab2"
+            (click)="changeTimePeriod('SemiAnnually','tab2')">
+            Semi Annually
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab3'" rel="tab3"
+            (click)="changeTimePeriod('Annually','tab3')">
+            Annually
+          </a>
+        </nav>
+
+      </div>
+    </div>
+    <div class="tab-content" id="myTabContent">
+      <div class="hide active" id="tab1"
+        [class.active]="periodSeclected == 'tab1' || periodSeclected == 'tab2' || periodSeclected == 'tab3'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">AD RECALL - {{adName}}</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="adRecallTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">BRAND LINKAGE - {{adName}}</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="brandLinkageTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1"
+        [class.active]="periodSeclected == 'tab1' || periodSeclected == 'tab2' || periodSeclected == 'tab3'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">BRAND LINKAGE AD RECALLED - {{adName}}</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="brandLinkageAdRecalledTrends" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">AD PERCEPTIONS (% TOP 2 BOX) - {{adName}}</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="addDiagTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1"
+        [class.active]="periodSeclected == 'tab1' || periodSeclected == 'tab2' || periodSeclected == 'tab3'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">CALL TO ACTION - {{adName}}</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="callToActionTrends" [updateData]="onDataUpdate"></app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+  <span class="note"><b>Low Base</b> shown if base size <75. </span>
+
+</div>

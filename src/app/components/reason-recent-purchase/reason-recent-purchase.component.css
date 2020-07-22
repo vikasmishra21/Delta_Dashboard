@@ -1,0 +1,10 @@
+label{font-size:1rem;font-weight:600;text-decoration: none;text-shadow: 0px;}
+.barBox{height:30px;background-color: #fafafa;}
+.bar-width{width:0%;background-color:#868585;position: relative;height:30px;}
+.bar-score{position: absolute;left:8%;top:8px;color:#868585}
+.bar-score.LowBaseScore{position: absolute;left:5%;top:0px;color:#868585;font-size: .8rem;}
+td{min-width:140px;max-width:150px;vertical-align: middle;width:140px;padding-top: .6rem;padding-bottom: .6rem;}
+.table-fixed{table-layout: fixed;}
+.brandList td{text-align: center;}
+h3:hover .titleOnHover{display: block}
+.card-header{min-height:56px}

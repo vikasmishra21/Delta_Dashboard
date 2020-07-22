@@ -1,0 +1,297 @@
+<p>retailer works</p>
+<div class="col-md-12 float-left  mt-5">
+  <app-loader [show]="showloader"></app-loader>
+
+  <div *ngIf="!showChart" id="chartView">
+    <app-filter-chip-list></app-filter-chip-list>
+    <div class="text-right float-right"> <i class="fa fa-caret-up text-success mr-1 fa-2x"></i>/
+      <i class="fa-2x fa fa-caret-down text-danger mr-2"></i><span class="font-sm">Significant @ 95% level</span>
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <h3 class="mt-2 mb-2 float-left col-7 pt-1 pos-rel" style="font-size: 24px;color:#29a84a">Reason for retailer (%) -
+      {{Category}}
+      <i class="font-xs ml-2 text-dark">Base: Recent {{Category}} replacement / remodel</i>
+      <div class="titleOnHover" *ngIf="Category == 'Faucet'"><b>Reason for retailer</b>: RECENT_FAU14</div>
+      <div class="titleOnHover" *ngIf="Category == 'Showerhead'"><b>Reason for retailer</b>: RECENT_SHD14</div>
+      <div class="titleOnHover" *ngIf="Category == 'Toilet'"><b>Reason for retailer</b>: RECENT_TOI14</div>
+    </h3>
+
+    <app-chart-container *ngIf="retailerListCode.length" [chart]="dataShow" [updateData]="onDataUpdate">
+    </app-chart-container>
+    <app-chart-container *ngIf="retailerListCode.length" [chart]="dataShowTotalAvg" [updateData]="onDataUpdate">
+    </app-chart-container>
+
+    <div class="float-right  mt-1">
+      <!-- <span class="mr-4" hidden><i class="fa fa-caret-up text-success mr-2 fa-2x"></i> <i -->
+      <!-- class="fa-2x fa fa-caret-down text-danger mr-2"></i><span>Significant @ 95% level</span></span> -->
+      <!-- <i class="fa fa-download font-sm border rounded p-2 clickable mr-2" title="Download Regression Analysis"></i> -->
+      <!-- <i class="fa fa-table font-sm border rounded p-2 clickable mr-2" title="Switch to Table View"></i> -->
+      <!-- <i class="fa fa-line-chart font-sm border rounded p-2 clickable" hidden title="Switch to Trended View"></i> -->
+      <div class="float-right mr-1">
+        <img src="../../../assets/images/excel.png" title="Download Excel" class="mr-2 clickable ml-2 mt-1"
+          style="height:20px;" (click)=downloadExcelFile() />
+        <img src="../../../assets/images/ppt.png" title="Download PPT" class="clickable" style="height:20px;"
+          (click)="pptexport('ReasonForRetailer_PPT.zip')" />
+      </div>
+    </div>
+    <div class="pos-rel float-right mr-2 brand-selector" title="Retailer Selector" style="width:200px;">
+      <app-retailer-selector *ngIf="Category == 'Faucet'" [Category]="Category"></app-retailer-selector>
+      <app-retailer-selector *ngIf="Category == 'Showerhead'" [Category]="Category"></app-retailer-selector>
+      <app-retailer-selector *ngIf="Category == 'Toilet'" [Category]="Category"></app-retailer-selector>
+      <app-retailer-selector *ngIf="Category == 'TubShowerUnit'" [Category]="Category"></app-retailer-selector>
+    </div>
+    <div class="clearfix"></div>
+    <div class="col-12">
+      <table class="table table-bordered w-100 mb-0 table-fixed mb-4" *ngIf="data">
+        <tr class="brandList">
+          <td style="width:12%"><label>Retailers</label></td>
+          <td><label>Average</label><br>(Total Retailers)</td>
+          <td><label>Average</label><br>(Selected Retailers)</td>
+
+          <td class="text-center" *ngFor="let retailers of retailersList">{{retailers}}</td>
+        </tr>
+        <tr *ngFor="let recentDetails of dataShowData; let i = index">
+          <td class="text-right" style="width:25%">
+            {{recentDetails.question}}
+          </td>
+          <td>
+            <div class="text-center pos-rel">
+              <div class="">{{recentDetails.TotalAverage | roundOff}}</div>
+            </div>
+          </td>
+          <td>
+            <div class="text-center pos-rel">
+              <div class="">{{recentDetails.Average | roundOff}}</div>
+            </div>
+          </td>
+          <td class="pos-rel" *ngFor="let score of recentDetails.Score; let k = index">
+            <div class="pos-rel">
+                <div class="text-center LowBase" [ngClass]="{'hide' :(score | scoreAndBase :dataShowBases[k]) != 'Low base'}">Low Base</div>
+                <div class="col-3 float-left pos-rel" [ngClass]="{'hide' :(score | scoreAndBase :dataShowBases[k]) == 'Low base'}">
+                  <div class="bar-score">{{score | scoreAndBase :dataShowBases[k]}}</div>
+                </div>
+                <div class="col-6 float-left p-0 barBox base" [ngClass]="{'hide' :(score | scoreAndBase :dataShowBases[k]) == 'Low base'}">
+                  <div class="bar-width" [style.width.%]="score | roundOff"></div>
+                  <div class="baseCount">Base: {{dataShowBases[k]}}</div>
+                </div>
+
+              <div *ngIf="recentDetails.isSignificance[k] && recentDetails.isSignificance[k] != undefined && (score | showSigTest :recentDetails.compareScore[k]) !== 0"
+                class="col-2 float-left sigbase"
+                [ngClass]="{'hide' :(score | scoreAndBase :dataShowBases[k]) == 'Low base'}">
+                <i class="fa fa-caret-down text-danger fa-2x"
+                  *ngIf="(score | showSigTest :recentDetails.compareScore[k]) === (-1)"></i>
+                <i class="fa fa-caret-up text-success fa-2x"
+                  *ngIf="(score | showSigTest :recentDetails.compareScore[k]) === 1"></i>
+                <div class="baseCount">Comparison Score: {{recentDetails.compareScore[k] | scoreAndBase}}
+                  <br><span>Comparison Base: {{recentDetails.compareBase[k]}}</span>
+                </div>
+              </div>
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-12 p-0" hidden>
+      Trended View
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div *ngIf="showTrends" id="trendView">
+    <div class="text-right float-right">
+      <img src="../../../assets/images/ppt.png" title="Download PPT" (click)="downloadPptTrends()" class="clickable"
+        style="height:20px;" />
+      <i class="fa fa-table p-1 ml-2 border rounded clickable" title="Chart View" id="chartsTabs"
+        (click)="toggleChart('chartsTabs');"></i>
+      <i class="fa fa-line-chart p-1 ml-2 border rounded clickable" title="Trend View" id="trendsTabs"
+        (click)="toggleTrends('trendsTabs');"></i>
+    </div>
+    <div class="row">
+      <div class="col-12">
+
+        <nav class="nav nav-pills border nav-justified">
+          <a class="nav-item nav-link active clickable border-right" [class.active]="periodSeclected == 'tab1'"
+            rel="tab1" (click)="changeTimePeriod('Quarterly','tab1')">
+            Quarterly
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab2'" rel="tab2"
+            (click)="changeTimePeriod('SemiAnnually','tab2')">
+            Semi Annually
+          </a>
+          <a class="nav-item nav-link clickable border-right" [class.active]="periodSeclected == 'tab3'" rel="tab3"
+            (click)="changeTimePeriod('Annually','tab3')">
+            Annually
+          </a>
+        </nav>
+
+      </div>
+    </div>
+    <div class="tab-content" id="myTabContent">
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Home Depot</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsHomeDepot" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Lowe's</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsLowes" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Menards</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsMenards" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Kitchen and bath speciality store/showroom</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsKitchen" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Plumbing supply store/showroom</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsPlumbing" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Kmart</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsKmart" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Target</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsTarget" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Walmart</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsWalmart" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Bed Bath & Beyond</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsBed" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Sams Club</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsSams" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Costco</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsCostco" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Amazon.com</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsAmazon" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Build.com</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsBuild" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">Ebay.com</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsEbay" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hide active" id="tab1" [class.active]="periodSeclected == 'tab1'">
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">eFaucets.com</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsEFaucets" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 float-left">
+          <div class="card">
+            <div class="card-header green">FaucetDirect.com</div>
+            <div class="card-body border">
+              <app-chart-container [chart]="reasonForRetailerTrendsFaucetDirect" [updateData]="onDataUpdate">
+              </app-chart-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+  <span class="note"><b>Low Base</b> shown if base size <75. </span>
